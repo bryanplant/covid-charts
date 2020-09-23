@@ -1,36 +1,45 @@
 package src
 
+// Common consts
 const(
 	Countries = "countries"
 	XStat     = "x_stat"
 	YStat    = "y_stat"
 	DataFile = "resources/owid-covid-data.csv"
+	DateLayout = "2006-01-02"
 
+	Date = "date"
+)
+
+// World data consts
+const(
 	IsoCode = "iso_code"
 	Continent = "continent"
 	Location = "location"
-	Date = "date"
 
 	TotalCases = "total_cases"
-	NewCases = "new_cases"
-	NewCasesSoothed = "new_cases_smoothed"
-	TotalDeaths = "total_deaths"
-	NewDeaths = "new_deaths"
-	NewDeathsSmoothed = "new_deaths_smoothed"
 	TotalCasesPerMillion = "total_cases_per_million"
+	NewCases = "new_cases"
+	NewCasesSmoothed = "new_cases_smoothed"
 	NewCasesPerMillion = "new_cases_per_million"
 	NewCasesSmoothedPerMillion = "new_cases_smoothed_per_million"
+
+	TotalDeaths = "total_deaths"
 	TotalDeathsPerMillion = "total_deaths_per_million"
+	NewDeaths = "new_deaths"
+	NewDeathsSmoothed = "new_deaths_smoothed"
 	NewDeathsPerMillion = "new_deaths_per_million"
 	NewDeathsSmoothedPerMillion = "new_deaths_smoothed_per_million"
-	NewTests = "new_tests"
+
 	TotalTests = "total_tests"
 	TotalTestsPerThousand = "total_tests_per_thousand"
-	NewTestsPerThousand = "new_tests_per_thousand"
+	NewTests = "new_tests"
 	NewTestsSmoothed = "new_tests_smoothed"
+	NewTestsPerThousand = "new_tests_per_thousand"
 	NewTestsSmoothedPerThousand = "new_tests_smoothed_per_thousand"
-	TestsPerCase = "tests_per_case"
+
 	PositiveRate = "positive_rate"
+	TestsPerCase = "tests_per_case"
 
 	TestUnits = "tests_units"
 	StringencyIndex = "stringency_index"
@@ -38,4 +47,60 @@ const(
 	PopulationDensity = "population_density"
 	MedianAge = "median_age"
 )
+
+// US data consts
+const (
+	State = "state"
+	DataQualityGrade = "dataQualityGrade"
+	Death = "death"
+	DeathConfirmed = "deathConfirmed"
+	DeathIncrease = "deathIncrease"
+	DeathProbable = "deathProbable"
+	Hospitalized = "hospitalized"
+	HospitalizedCumulative = "hospitalizedCumulative"
+	HospitalizedCurrently = "hospitalizedCurrently"
+	HospitalizedIncrease = "hospitalizedIncrease"
+	InIcuCumulative = "inIcuCumulative"
+	InIcuCurrently = "inIcuCurrently"
+	Negative = "Negative"
+	NegativeIncrease = "negativeIncrease"
+	NegativeTestsAntibody = "negativeTestsAntibody"
+	NegativeTestsPeopleAntibody = "negativeTestsPeopleAntibody"
+	NegativeTestsViral = "negativeTestsViral"
+	OnVentilatorCumulative = "onVentilatorCumulative"
+	OnVentilatorCurrently = "onVentilatorCurrently"
+	Pending = "pending"
+	Positive = "positive"
+	PositiveCasesViral = "positiveCasesViral"
+	PositiveIncrease = "positiveIncrease"
+	PositiveScore = "positiveScore"
+	PositiveTestsAntibody = "positiveTestsAntibody"
+	PositiveTestsAntigen = "positiveTestsAntigen"
+	PositiveTestsPeopleAntibody = "positiveTestsPeopleAntibody"
+	PositiveTestsPeopleAntigen = "positiveTestsPeopleAntigen"
+	PositiveTestsViral = "positiveTestsViral"
+	Recovered = "recovered"
+	TotalTestEncountersViral = "totalTestEncountersViral"
+	TotalTestEncountersViralIncrease = "totalTestEncountersViralIncrease"
+	TotalTestResults = "totalTestResults"
+	TotalTestResultsIncrease = "totalTestResultsIncrease"
+	TotalTestsAntibody = "totalTestsAntibody"
+	TotalTestsAntigen = "totalTestsAntigen"
+	TotalTestsPeopleAntibody = "totalTestsPeopleAntibody"
+	TotalTestsPeopleAntigen = "totalTestsPeopleAntigen"
+	TotalTestsPeopleViral = "totalTestsPeopleViral"
+	TotalTestsPeopleViralIncrease = "totalTestsPeopleViralIncrease"
+	TotalTestsViral = "totalTestsViral"
+	TotalTestsViralIncrease = "totalTestsViralIncrease"
+)
+
+func getFieldMap() map[string]string {
+	return map[string]string {
+		State: Location,
+
+		Positive: TotalCases,
+		PositiveIncrease: NewCases,
+
+	}
+}
 
