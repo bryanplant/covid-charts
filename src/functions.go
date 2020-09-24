@@ -2,10 +2,12 @@ package src
 
 import (
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"encoding/csv"
 	"encoding/json"
@@ -47,19 +49,21 @@ func Options(w http.ResponseWriter, _ *http.Request) {
 
 	data, stats := readData()
 
-	var countries []string
-	for country := range data {
-		countries = append(countries, country)
+	var locations []string
+	for _, locationData := range data {
+		if locationData.Location != nil {
+			locations = append(locations, *locationData.Location)
+		}
 	}
 
-	sort.Strings(countries)
+	sort.Strings(locations)
 	sort.Strings(stats)
 
 	options := map[string][]string{}
-	options["countries"] = countries
+	options["locations"] = locations
 	options["stats"] = stats
 
-	bytes, err := json.Marshal(countries)
+	bytes, err := json.Marshal(locations)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,14 +74,14 @@ func Options(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func getLine(data map[string][]record, country, stat string) line {
-	countryData := data[country]
+func getLine(locations map[string]location, location, stat string) line {
+	locationData := locations[location]
 
 	var dataPoints []dataPoint
-	for _, item := range countryData {
+	for _, item := range locationData.Data {
 		if item.getField(stat) != nil {
 			dataPoint := dataPoint{
-				Date:  item.Date.Format(DateLayout),
+				Date:  time.Time(item.Date).Format(DateLayout),
 				Value: *item.getField(stat),
 			}
 			dataPoints = append(dataPoints, dataPoint)
@@ -85,7 +89,7 @@ func getLine(data map[string][]record, country, stat string) line {
 	}
 
 	return line{
-		Label: country,
+		Label: *locationData.Location,
 		Data: dataPoints,
 	}
 }
@@ -106,19 +110,22 @@ func readRequest(r *http.Request) *request {
 	return body
 }
 
-func readData() (map[string][]record, []string) {
-	countries := map[string][]record{}
+func readData() (map[string]location, []string) {
+	var locations map[string]location
 
-	csvFile := getFile(DataFile)
-	reader := io.Reader(csvFile)
-
-	maps, stats := csvToMaps(reader)
-	for _, m := range maps {
-		record := parseRecord(m)
-		countries[record.Location] = append(countries[record.Location], record)
+	file := getFile("resources/owid-covid-data.json")
+	reader := io.Reader(file)
+	bytes, err := ioutil.ReadAll(reader)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	return countries, stats
+	err = json.Unmarshal(bytes, &locations)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return locations, []string{}
 }
 
 func csvToMaps(reader io.Reader) ([]map[string]string, []string) {
@@ -147,18 +154,21 @@ func csvToMaps(reader io.Reader) ([]map[string]string, []string) {
 }
 
 func getFile(path string) *os.File {
-	var csvFile *os.File
+	var file *os.File
 	var err error
 
-	csvFile, err = os.Open(path)
+	file, err = os.Open(path)
 	if err != nil {
-		csvFile, err = os.Open("src/" + path)
+		file, err = os.Open("src/" + path)
 		if err != nil {
-			log.Fatalln("Couldn't open the csv file", err)
+			file, err = os.Open("src/src/" + path)
+			if err != nil {
+				log.Fatalln("Couldn't open the file", err)
+			}
 		}
 	}
 
-	return csvFile
+	return file
 }
 
 type request struct {

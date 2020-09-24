@@ -2,35 +2,39 @@ package src
 
 import (
 	"log"
-	"strconv"
-	"time"
 )
 
+type location struct {
+	Continent         *string   `json:"continent"`
+	Location          *string   `json:"location"`
+	Population        *float32  `json:"population"`
+	PopulationDensity *float32  `json:"population_density"`
+	MedianAge         *float32  `json:"median_age"`
+	Data              []*record `json:"data"`
+}
+
 type record struct {
-	IsoCode                     string
-	Continent                   string
-	Location                    string
-	Date                        time.Time
-	TotalCases                  *float32
-	TotalCasesPerMillion        *float32
-	NewCases                    *float32
-	NewCasesSmoothed            *float32
-	NewCasesPerMillion          *float32
-	NewCasesSmoothedPerMillion  *float32
-	TotalDeaths                 *float32
-	TotalDeathsPerMillion       *float32
-	NewDeaths                   *float32
-	NewDeathsSmoothed           *float32
-	NewDeathsPerMillion         *float32
-	NewDeathsSmoothedPerMillion *float32
-	TotalTests                  *float32
-	TotalTestsPerThousand       *float32
-	NewTests                    *float32
-	NewTestsSmoothed            *float32
-	NewTestsPerThousand         *float32
-	NewTestsSmoothedPerThousand *float32
-	TestsPerCase                *float32
-	PositiveRate                *float32
+	Date                        jsonDate `json:"date"`
+	TotalCases                  *float32 `json:"total_cases"`
+	TotalCasesPerMillion        *float32 `json:"total_cases_per_million"`
+	NewCases                    *float32 `json:"new_cases"`
+	NewCasesSmoothed            *float32 `json:"new_cases_smoothed"`
+	NewCasesPerMillion          *float32 `json:"new_cases_per_million"`
+	NewCasesSmoothedPerMillion  *float32 `json:"new_cases_smoothed_per_million"`
+	TotalDeaths                 *float32 `json:"total_deaths"`
+	TotalDeathsPerMillion       *float32 `json:"total_deaths_per_million"`
+	NewDeaths                   *float32 `json:"new_deaths"`
+	NewDeathsSmoothed           *float32 `json:"new_deaths_smoothed"`
+	NewDeathsPerMillion         *float32 `json:"new_deaths_per_million"`
+	NewDeathsSmoothedPerMillion *float32 `json:"new_deaths_smoothed_per_million"`
+	TotalTests                  *float32 `json:"total_tests"`
+	TotalTestsPerThousand       *float32 `json:"total_tests_per_thousand"`
+	NewTests                    *float32 `json:"new_tests"`
+	NewTestsSmoothed            *float32 `json:"new_tests_smoothed"`
+	NewTestsPerThousand         *float32 `json:"new_tests_per_thousand"`
+	NewTestsSmoothedPerThousand *float32 `json:"new_tests_smoothed_per_thousand"`
+	TestsPerCase                *float32 `json:"positive_rate"`
+	PositiveRate                *float32 `json:"tests_per_case"`
 }
 
 func (r record) getField(field string) *float32 {
@@ -87,61 +91,64 @@ func (r record) getField(field string) *float32 {
 	return nil
 }
 
-func parseRecord(m map[string]string) record {
-	return record{
-		IsoCode:   m[IsoCode],
-		Continent: m[Continent],
-		Location:  m[Location],
-		Date:      parseDate(m[Date]),
-
-		TotalCases:           parseFloat(m[TotalCases]),
-		TotalCasesPerMillion: parseFloat(m[TotalCasesPerMillion]),
-
-		NewCases:                   parseFloat(m[NewCases]),
-		NewCasesSmoothed:           parseFloat(m[NewCasesSmoothed]),
-		NewCasesPerMillion:         parseFloat(m[NewCasesPerMillion]),
-		NewCasesSmoothedPerMillion: parseFloat(m[NewCasesSmoothedPerMillion]),
-
-		TotalDeaths:           parseFloat(m[TotalDeaths]),
-		TotalDeathsPerMillion: parseFloat(m[TotalDeathsPerMillion]),
-
-		NewDeaths:                   parseFloat(m[NewDeaths]),
-		NewDeathsSmoothed:           parseFloat(m[NewDeathsSmoothed]),
-		NewDeathsPerMillion:         parseFloat(m[NewDeathsPerMillion]),
-		NewDeathsSmoothedPerMillion: parseFloat(m[NewDeathsSmoothedPerMillion]),
-
-		TotalTests:            parseFloat(m[TotalTests]),
-		TotalTestsPerThousand: parseFloat(m[TotalTestsPerThousand]),
-
-		NewTests:                    parseFloat(m[NewTests]),
-		NewTestsSmoothed:            parseFloat(m[NewTestsSmoothed]),
-		NewTestsPerThousand:         parseFloat(m[NewTestsPerThousand]),
-		NewTestsSmoothedPerThousand: parseFloat(m[NewTestsSmoothedPerThousand]),
-
-		TestsPerCase: parseFloat(m[TestsPerCase]),
-		PositiveRate: parseFloat(m[PositiveRate]),
-	}
-}
-
-func parseDate(dateString string) time.Time {
-	date, err := time.Parse(DateLayout, dateString)
-	if err != nil {
-		log.Fatalln("Failed to parse date: "+dateString, err)
-	}
-
-	return date
-}
-
-func parseFloat(floatString string) *float32 {
-	if floatString == "" {
-		return nil
-	}
-
-	f, err := strconv.ParseFloat(floatString, 32)
-	if err != nil {
-		log.Fatalln("Failed to parse float: "+floatString, err)
-	}
-
-	f32 := float32(f)
-	return &f32
-}
+//func parseMetadata(m map[string]string) location {
+//	return location{
+//		Continent:         getStringPointer(m[Continent]),
+//		Location:          getStringPointer(m[Location]),
+//		Population:        parseFloat(m[Population]),
+//		PopulationDensity: parseFloat(m[PopulationDensity]),
+//	}
+//}
+//
+//func parseRecord(m map[string]string) record {
+//	return record{
+//		Date:                        parseDate(m[Date]),
+//		TotalCases:                  parseFloat(m[TotalCases]),
+//		TotalCasesPerMillion:        parseFloat(m[TotalCasesPerMillion]),
+//		NewCases:                    parseFloat(m[NewCases]),
+//		NewCasesSmoothed:            parseFloat(m[NewCasesSmoothed]),
+//		NewCasesPerMillion:          parseFloat(m[NewCasesPerMillion]),
+//		NewCasesSmoothedPerMillion:  parseFloat(m[NewCasesSmoothedPerMillion]),
+//		TotalDeaths:                 parseFloat(m[TotalDeaths]),
+//		TotalDeathsPerMillion:       parseFloat(m[TotalDeathsPerMillion]),
+//		NewDeaths:                   parseFloat(m[NewDeaths]),
+//		NewDeathsSmoothed:           parseFloat(m[NewDeathsSmoothed]),
+//		NewDeathsPerMillion:         parseFloat(m[NewDeathsPerMillion]),
+//		NewDeathsSmoothedPerMillion: parseFloat(m[NewDeathsSmoothedPerMillion]),
+//		TotalTests:                  parseFloat(m[TotalTests]),
+//		TotalTestsPerThousand:       parseFloat(m[TotalTestsPerThousand]),
+//		NewTests:                    parseFloat(m[NewTests]),
+//		NewTestsSmoothed:            parseFloat(m[NewTestsSmoothed]),
+//		NewTestsPerThousand:         parseFloat(m[NewTestsPerThousand]),
+//		NewTestsSmoothedPerThousand: parseFloat(m[NewTestsSmoothedPerThousand]),
+//		TestsPerCase:                parseFloat(m[TestsPerCase]),
+//		PositiveRate:                parseFloat(m[PositiveRate]),
+//	}
+//}
+//
+//func parseDate(dateString string) time.Time {
+//	date, err := time.Parse(DateLayout, dateString)
+//	if err != nil {
+//		log.Fatalln("Failed to parse date: "+dateString, err)
+//	}
+//
+//	return date
+//}
+//
+//func parseFloat(floatString string) *float32 {
+//	if floatString == "" {
+//		return nil
+//	}
+//
+//	f, err := strconv.ParseFloat(floatString, 32)
+//	if err != nil {
+//		log.Fatalln("Failed to parse float: "+floatString, err)
+//	}
+//
+//	f32 := float32(f)
+//	return &f32
+//}
+//
+//func getStringPointer(s string) *string {
+//	return &s
+//}
