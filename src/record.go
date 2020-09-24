@@ -2,18 +2,20 @@ package src
 
 import (
 	"log"
+	"sort"
+	"time"
 )
 
-type location struct {
+type Location struct {
 	Continent         *string   `json:"continent"`
 	Location          *string   `json:"location"`
 	Population        *float32  `json:"population"`
 	PopulationDensity *float32  `json:"population_density"`
 	MedianAge         *float32  `json:"median_age"`
-	Data              []*record `json:"data"`
+	Data              []*Record `json:"data"`
 }
 
-type record struct {
+type Record struct {
 	Date                        jsonDate `json:"date"`
 	TotalCases                  *float32 `json:"total_cases"`
 	TotalCasesPerMillion        *float32 `json:"total_cases_per_million"`
@@ -33,11 +35,15 @@ type record struct {
 	NewTestsSmoothed            *float32 `json:"new_tests_smoothed"`
 	NewTestsPerThousand         *float32 `json:"new_tests_per_thousand"`
 	NewTestsSmoothedPerThousand *float32 `json:"new_tests_smoothed_per_thousand"`
-	TestsPerCase                *float32 `json:"positive_rate"`
-	PositiveRate                *float32 `json:"tests_per_case"`
+	TestsPerCase                *float32 `json:"tests_per_case"`
+	PositiveRate                *float32 `json:"positive_rate"`
 }
 
-func (r record) getField(field string) *float32 {
+func (r Record) getDate() time.Time {
+	return time.Time(r.Date)
+}
+
+func (r Record) getField(field string) *float32 {
 	switch field {
 	case TotalCases:
 		return r.TotalCases
@@ -87,68 +93,107 @@ func (r record) getField(field string) *float32 {
 		return r.PositiveRate
 	}
 
-	log.Fatal("Unknown record field: " + field)
+	log.Fatal("Unknown Record field: " + field)
 	return nil
 }
 
-//func parseMetadata(m map[string]string) location {
-//	return location{
-//		Continent:         getStringPointer(m[Continent]),
-//		Location:          getStringPointer(m[Location]),
-//		Population:        parseFloat(m[Population]),
-//		PopulationDensity: parseFloat(m[PopulationDensity]),
-//	}
-//}
-//
-//func parseRecord(m map[string]string) record {
-//	return record{
-//		Date:                        parseDate(m[Date]),
-//		TotalCases:                  parseFloat(m[TotalCases]),
-//		TotalCasesPerMillion:        parseFloat(m[TotalCasesPerMillion]),
-//		NewCases:                    parseFloat(m[NewCases]),
-//		NewCasesSmoothed:            parseFloat(m[NewCasesSmoothed]),
-//		NewCasesPerMillion:          parseFloat(m[NewCasesPerMillion]),
-//		NewCasesSmoothedPerMillion:  parseFloat(m[NewCasesSmoothedPerMillion]),
-//		TotalDeaths:                 parseFloat(m[TotalDeaths]),
-//		TotalDeathsPerMillion:       parseFloat(m[TotalDeathsPerMillion]),
-//		NewDeaths:                   parseFloat(m[NewDeaths]),
-//		NewDeathsSmoothed:           parseFloat(m[NewDeathsSmoothed]),
-//		NewDeathsPerMillion:         parseFloat(m[NewDeathsPerMillion]),
-//		NewDeathsSmoothedPerMillion: parseFloat(m[NewDeathsSmoothedPerMillion]),
-//		TotalTests:                  parseFloat(m[TotalTests]),
-//		TotalTestsPerThousand:       parseFloat(m[TotalTestsPerThousand]),
-//		NewTests:                    parseFloat(m[NewTests]),
-//		NewTestsSmoothed:            parseFloat(m[NewTestsSmoothed]),
-//		NewTestsPerThousand:         parseFloat(m[NewTestsPerThousand]),
-//		NewTestsSmoothedPerThousand: parseFloat(m[NewTestsSmoothedPerThousand]),
-//		TestsPerCase:                parseFloat(m[TestsPerCase]),
-//		PositiveRate:                parseFloat(m[PositiveRate]),
-//	}
-//}
-//
-//func parseDate(dateString string) time.Time {
-//	date, err := time.Parse(DateLayout, dateString)
-//	if err != nil {
-//		log.Fatalln("Failed to parse date: "+dateString, err)
-//	}
-//
-//	return date
-//}
-//
-//func parseFloat(floatString string) *float32 {
-//	if floatString == "" {
-//		return nil
-//	}
-//
-//	f, err := strconv.ParseFloat(floatString, 32)
-//	if err != nil {
-//		log.Fatalln("Failed to parse float: "+floatString, err)
-//	}
-//
-//	f32 := float32(f)
-//	return &f32
-//}
-//
-//func getStringPointer(s string) *string {
-//	return &s
-//}
+type StateRecord struct {
+	Date                        jsonDate `json:"date"`
+	State						*string  `json:"state"`
+	TotalCases                  *float32 `json:"positive"`
+	NewCases                    *float32 `json:"positiveIncrease"`
+	TotalDeaths                 *float32 `json:"death"`
+	NewDeaths                   *float32 `json:"deathIncrease"`
+	TotalTests                  *float32 `json:"totalTestResults"`
+	NewTests                    *float32 `json:"totalTestResultsIncrease"`
+}
+
+func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[string]StateMetadata) map[string]*Location {
+	locations := map[string]*Location{}
+	for _, stateRecord := range stateRecords {
+		location, ok := locations[*stateRecord.State]
+		if !ok {
+			location = &Location{
+				Continent: getStringPointer("North America"),
+				Location: stateRecord.State,
+				Data: []*Record{},
+			}
+
+			if metadata, ok := stateMetadata[*location.Location]; ok {
+				location.Population = metadata.Population
+			}
+
+			locations[*stateRecord.State] = location
+		}
+
+		var positiveRate float32
+		if stateRecord.NewCases != nil && stateRecord.NewTests != nil && *stateRecord.NewTests != 0 {
+			positiveRate = *stateRecord.NewCases / *stateRecord.NewTests
+		}
+
+		var totalCasesPerMillion float32
+		var newCasesPerMillion float32
+		var totalDeathsPerMillion float32
+		var newDeathsPerMillion float32
+		var totalTestsPerThousand float32
+		var newTestsPerThousand float32
+		if population := location.Population; population != nil {
+			popMillion := *population / 1000000
+			popThousand := *population / 1000
+
+			if stateRecord.TotalCases != nil {
+				totalCasesPerMillion = *stateRecord.TotalCases / popMillion
+			}
+			if stateRecord.NewCases != nil {
+				newCasesPerMillion = *stateRecord.NewCases / popMillion
+			}
+			if stateRecord.TotalDeaths != nil {
+				totalDeathsPerMillion = *stateRecord.TotalDeaths / popMillion
+			}
+			if stateRecord.NewDeaths != nil {
+				newDeathsPerMillion = *stateRecord.NewDeaths / popMillion
+			}
+			if stateRecord.TotalTests != nil {
+				totalTestsPerThousand = *stateRecord.TotalTests / popThousand
+			}
+			if stateRecord.NewTests != nil {
+				newTestsPerThousand = *stateRecord.NewTests / popThousand
+			}
+		}
+
+		record := &Record {
+			Date: stateRecord.Date,
+			TotalCases: stateRecord.TotalCases,
+			TotalCasesPerMillion: &totalCasesPerMillion,
+			NewCases: stateRecord.NewCases,
+			NewCasesPerMillion: &newCasesPerMillion,
+			TotalDeaths: stateRecord.TotalDeaths,
+			TotalDeathsPerMillion: &totalDeathsPerMillion,
+			NewDeaths: stateRecord.NewDeaths,
+			NewDeathsPerMillion: &newDeathsPerMillion,
+			TotalTests: stateRecord.TotalTests,
+			TotalTestsPerThousand: &totalTestsPerThousand,
+			NewTests: stateRecord.NewTests,
+			NewTestsPerThousand: &newTestsPerThousand,
+			PositiveRate: &positiveRate,
+		}
+		location.Data = append(location.Data, record)
+	}
+
+	for _, location := range locations {
+		stateData := location.Data
+		sort.Slice(stateData, func(i, j int) bool {
+			return stateData[i].getDate().Before(stateData[j].getDate())
+		})
+	}
+
+	return locations
+}
+
+type StateMetadata struct {
+	Population *float32 `json:"population"`
+}
+
+func getStringPointer(s string) *string {
+	return &s
+}

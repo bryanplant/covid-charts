@@ -1,0 +1,141 @@
+{
+  "AL": {
+    "name": "Alabama",
+    "population": 4903185
+  },
+  "AK": {
+    "name": "Alaska",
+    "population": 731545
+  },
+  "AZ": {
+    "name": "Arizona",
+    "population": 7278717
+  },
+  "AR": {
+    "name": "Arkansas",
+    "population": 3017804
+  },
+  "CA": {
+    "name": "California",
+    "population": 39512223
+  },
+  "CO": {
+    "name": "Colorado",
+    "population": 5758736
+  },
+  "CT": {
+    "name": "Connecticut",
+    "population": 	3565287
+  },
+  "DE": {
+    "name": "Delaware",
+    "population": 973764
+  },
+  "DC": {
+    "name": "District of Columbia",
+    "population": 705749
+  },
+  "FL": {
+    "name": "Florida",
+    "population": 21477737
+  },
+  "GA": {
+    "name": "Georgia",
+    "population": 10617423
+  },
+  "GU": {
+    "name": "Guam",
+    "population": 168485
+  },
+  "HI": {
+    "name": "Hawaii",
+    "population": 1415872
+  },
+  "ID":{
+    "name": "Idaho",
+    "population": 1787065
+  },
+  "IL": {
+    "name": "Illinois",
+    "population": 12671821
+  },
+  "IN": {
+    "name": "Indiana",
+    "population": 6732219
+  },
+  "IA": {
+    "name": "Iowa",
+    "population": 3155070
+  },
+  "KS": {
+    "name": "Kansas",
+    "population": 2913314
+  },
+  "KY": {
+    "name": "Kentucky",
+    "population": 4467673
+  },
+  "LA": {
+    "name": "Louisiana",
+    "population": 4648794
+  },
+  "ME": {
+    "name": "Maine",
+    "population": 1344212
+  },
+  "MD": {
+    "name": "Maryland",
+    "population": 6045680
+  },
+  "MA": {
+    "name": "Massachusetts",
+    "population": 6892503
+  },
+  "MI": {
+    "name": "Michigan",
+    "population": 9986857
+  },
+  "MN": {
+    "name": "Minnesota",
+    "population": 5639632
+  },
+  "MS": {
+    "name": "Mississippi",
+    "population": 2976149
+  },
+  "MO": {
+    "name": "Missouri",
+    "population": 6137428
+  },
+  "MT": {
+    "name": "Montana",
+    "population": 1068778
+  },
+  "NE": {
+    "name": "Nebraska",
+    "population": 1934408
+  },
+  "NV": {
+    "name": "Nevada",
+    "population": 3080156
+  },
+  "NH": {
+    "name": "New Hampshire",
+    "population": 1359711
+  },
+  "NJ": {
+    "name": "New Jersey",
+    "population": 8882190
+  },
+  "NM": {
+    "name": "New Mexico",
+    "population": 2096829
+  },
+  "NY": {
+    "name": "New York",
+    "population": 19453561
+  },
+  "WA": {
+    "population": 7614893
+  }
+}

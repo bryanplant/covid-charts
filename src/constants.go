@@ -5,7 +5,9 @@ const (
 	Countries  = "countries"
 	XStat      = "x_stat"
 	YStat      = "y_stat"
-	DataFile   = "resources/owid-covid-data.json"
+	CountryFile = "resources/owid-covid-data.json"
+	StateFile   = "resources/states.json"
+	StateMetadataFile = "resources/state-metadata.json"
 	DateLayout = "2006-01-02"
 
 	Date = "date"
@@ -15,7 +17,6 @@ const (
 const (
 	IsoCode   = "iso_code"
 	Continent = "continent"
-	Location  = "location"
 
 	TotalCases                 = "total_cases"
 	TotalCasesPerMillion       = "total_cases_per_million"
@@ -91,12 +92,3 @@ const (
 	TotalTestsViral                  = "totalTestsViral"
 	TotalTestsViralIncrease          = "totalTestsViralIncrease"
 )
-
-func getFieldMap() map[string]string {
-	return map[string]string{
-		State: Location,
-
-		Positive:         TotalCases,
-		PositiveIncrease: NewCases,
-	}
-}
