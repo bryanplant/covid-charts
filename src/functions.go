@@ -19,11 +19,29 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 
 	body := readRequest(r)
 
-	countries, _ := readData()
+	locations, _ := readData()
+
+	selections := body.Locations
+	if len(selections) == 1 && selections[0] == "allStates" || selections[0] == "allCountries" {
+		var locationType string
+		if selections[0] == "allStates" {
+			locationType = LocationTypeState
+		} else if selections[0] == "allCountries" {
+			locationType = LocationTypeCountry
+		}
+
+		selections = []string{}
+
+		for name, location := range locations {
+			if location.Type == locationType {
+				selections = append(selections, name)
+			}
+		}
+	}
 
 	var lines []Line
-	for _, country := range body.Countries {
-		line := getLine(countries, country, body.YStat)
+	for _, location := range selections {
+		line := getLine(locations, location, body.YStat)
 		lines = append(lines, line)
 	}
 
@@ -48,8 +66,8 @@ func Options(w http.ResponseWriter, _ *http.Request) {
 
 	var locations []string
 	for _, locationData := range data {
-		if locationData.Location != nil {
-			locations = append(locations, *locationData.Location)
+		if locationData.Name != nil {
+			locations = append(locations, *locationData.Name)
 		}
 	}
 
@@ -76,18 +94,19 @@ func getLine(locations map[string]*Location, location, stat string) Line {
 
 	var dataPoints []DataPoint
 	for _, item := range locationData.Data {
-		if item.getField(stat) != nil {
+		if value := item.getField(stat); value != nil && *value >= 0 {
 			dataPoint := DataPoint{
 				Date:  item.getDate().Format(DateLayout),
-				Value: *item.getField(stat),
+				Value: *value,
 			}
 			dataPoints = append(dataPoints, dataPoint)
 		}
 	}
 
 	return Line{
-		Label: *locationData.Location,
-		Data: dataPoints,
+		Label: location,
+		Color: *locationData.Color,
+		Data:  dataPoints,
 	}
 }
 
@@ -108,8 +127,17 @@ func readRequest(r *http.Request) *Request {
 }
 
 func readData() (map[string]*Location, []string) {
-	var locations map[string]*Location
-	getDataFromFile(CountryFile, &locations)
+	locations := map[string]*Location{}
+
+	var countries map[string]*Location
+	getDataFromFile(CountryFile, &countries)
+	for _, country := range countries {
+		country.Type = LocationTypeCountry
+	}
+	for name, country := range countries {
+		locations[name] = country
+		locations[name].Color = getStringPointer("")
+	}
 
 	var stateRecords []StateRecord
 	getDataFromFile(StateFile, &stateRecords)
@@ -157,17 +185,18 @@ func getFile(path string) *os.File {
 }
 
 type Request struct {
-	Countries []string `json:"countries"`
-	XStat string `json:"x_stat"`
-	YStat string `json:"y_stat"`
+	Locations []string `json:"locations"`
+	XStat     string   `json:"x_stat"`
+	YStat     string   `json:"y_stat"`
 }
 
 type Line struct {
 	Label string
-	Data []DataPoint
+	Color string
+	Data  []DataPoint
 }
 
 type DataPoint struct {
-	Date string
+	Date  string
 	Value float32
 }

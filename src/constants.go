@@ -40,6 +40,7 @@ const (
 	NewTestsSmoothedPerThousand = "new_tests_smoothed_per_thousand"
 
 	PositiveRate = "positive_rate"
+	PositiveRateSmoothed = "positive_rate_smoothed"
 	TestsPerCase = "tests_per_case"
 
 	Population        = "population"

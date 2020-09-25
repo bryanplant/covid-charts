@@ -6,9 +6,17 @@ import (
 	"time"
 )
 
+const (
+	LocationTypeState     = "state"
+	LocationTypeCountry   = "country"
+	LocationTypeTerritory = "territory"
+)
+
 type Location struct {
+	Type              string    `json:"type"`
 	Continent         *string   `json:"continent"`
-	Location          *string   `json:"location"`
+	Name              *string   `json:"location"`
+	Color             *string   `json:"color"`
 	Population        *float32  `json:"population"`
 	PopulationDensity *float32  `json:"population_density"`
 	MedianAge         *float32  `json:"median_age"`
@@ -37,6 +45,7 @@ type Record struct {
 	NewTestsSmoothedPerThousand *float32 `json:"new_tests_smoothed_per_thousand"`
 	TestsPerCase                *float32 `json:"tests_per_case"`
 	PositiveRate                *float32 `json:"positive_rate"`
+	PositiveRateSmoothed        *float32 `json:"positive_rate_smoothed"`
 }
 
 func (r Record) getDate() time.Time {
@@ -91,6 +100,8 @@ func (r Record) getField(field string) *float32 {
 		return r.TestsPerCase
 	case PositiveRate:
 		return r.PositiveRate
+	case PositiveRateSmoothed:
+		return r.PositiveRateSmoothed
 	}
 
 	log.Fatal("Unknown Record field: " + field)
@@ -98,28 +109,39 @@ func (r Record) getField(field string) *float32 {
 }
 
 type StateRecord struct {
-	Date                        jsonDate `json:"date"`
-	State						*string  `json:"state"`
-	TotalCases                  *float32 `json:"positive"`
-	NewCases                    *float32 `json:"positiveIncrease"`
-	TotalDeaths                 *float32 `json:"death"`
-	NewDeaths                   *float32 `json:"deathIncrease"`
-	TotalTests                  *float32 `json:"totalTestResults"`
-	NewTests                    *float32 `json:"totalTestResultsIncrease"`
+	Date        jsonDate `json:"date"`
+	State       *string  `json:"state"`
+	TotalCases  *float32 `json:"positive"`
+	NewCases    *float32 `json:"positiveIncrease"`
+	TotalDeaths *float32 `json:"death"`
+	NewDeaths   *float32 `json:"deathIncrease"`
+	TotalTests  *float32 `json:"totalTestResults"`
+	NewTests    *float32 `json:"totalTestResultsIncrease"`
+}
+
+func (r StateRecord) getDate() time.Time {
+	return time.Time(r.Date)
 }
 
 func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[string]StateMetadata) map[string]*Location {
+	sort.Slice(stateRecords, func(i, j int) bool {
+		return stateRecords[i].getDate().Before(stateRecords[j].getDate())
+	})
+
 	locations := map[string]*Location{}
 	for _, stateRecord := range stateRecords {
 		location, ok := locations[*stateRecord.State]
 		if !ok {
 			location = &Location{
 				Continent: getStringPointer("North America"),
-				Location: stateRecord.State,
-				Data: []*Record{},
+				Name:      stateRecord.State,
+				Data:      []*Record{},
 			}
 
-			if metadata, ok := stateMetadata[*location.Location]; ok {
+			if metadata, ok := stateMetadata[*location.Name]; ok {
+				location.Name = metadata.Name
+				location.Type = *metadata.Type
+				location.Color = metadata.Color
 				location.Population = metadata.Population
 			}
 
@@ -161,36 +183,45 @@ func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[strin
 			}
 		}
 
-		record := &Record {
-			Date: stateRecord.Date,
-			TotalCases: stateRecord.TotalCases,
-			TotalCasesPerMillion: &totalCasesPerMillion,
-			NewCases: stateRecord.NewCases,
-			NewCasesPerMillion: &newCasesPerMillion,
-			TotalDeaths: stateRecord.TotalDeaths,
+		var positiveRateSmoothed float32
+		if len(location.Data) >= 7 {
+			var sum float32
+			for i := 1; i <= 7; i++ {
+				value := location.Data[len(location.Data)-i].PositiveRate
+				if value != nil {
+					sum += *value
+				}
+			}
+			positiveRateSmoothed = sum / 7
+		}
+
+		record := &Record{
+			Date:                  stateRecord.Date,
+			TotalCases:            stateRecord.TotalCases,
+			TotalCasesPerMillion:  &totalCasesPerMillion,
+			NewCases:              stateRecord.NewCases,
+			NewCasesPerMillion:    &newCasesPerMillion,
+			TotalDeaths:           stateRecord.TotalDeaths,
 			TotalDeathsPerMillion: &totalDeathsPerMillion,
-			NewDeaths: stateRecord.NewDeaths,
-			NewDeathsPerMillion: &newDeathsPerMillion,
-			TotalTests: stateRecord.TotalTests,
+			NewDeaths:             stateRecord.NewDeaths,
+			NewDeathsPerMillion:   &newDeathsPerMillion,
+			TotalTests:            stateRecord.TotalTests,
 			TotalTestsPerThousand: &totalTestsPerThousand,
-			NewTests: stateRecord.NewTests,
-			NewTestsPerThousand: &newTestsPerThousand,
-			PositiveRate: &positiveRate,
+			NewTests:              stateRecord.NewTests,
+			NewTestsPerThousand:   &newTestsPerThousand,
+			PositiveRate:          &positiveRate,
+			PositiveRateSmoothed:  &positiveRateSmoothed,
 		}
 		location.Data = append(location.Data, record)
-	}
-
-	for _, location := range locations {
-		stateData := location.Data
-		sort.Slice(stateData, func(i, j int) bool {
-			return stateData[i].getDate().Before(stateData[j].getDate())
-		})
 	}
 
 	return locations
 }
 
 type StateMetadata struct {
+	Name       *string  `json:"name"`
+	Type       *string  `json:"type"`
+	Color      *string  `json:"color"`
 	Population *float32 `json:"population"`
 }
 
