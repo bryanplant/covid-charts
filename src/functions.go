@@ -104,9 +104,10 @@ func getLine(locations map[string]*Location, location, stat string) Line {
 	}
 
 	return Line{
-		Label: location,
-		Color: *locationData.Color,
-		Data:  dataPoints,
+		ID:          location,
+		DisplayName: *locationData.Name,
+		Color:       *locationData.Color,
+		Data:        dataPoints,
 	}
 }
 
@@ -150,6 +151,10 @@ func readData() (map[string]*Location, []string) {
 		locations[name] = state
 	}
 
+	for _, location := range locations {
+		location.populateSmoothedData()
+	}
+
 	return locations, []string{}
 }
 
@@ -191,12 +196,13 @@ type Request struct {
 }
 
 type Line struct {
-	Label string
-	Color string
-	Data  []DataPoint
+	ID          string
+	DisplayName string
+	Color       string
+	Data        []DataPoint
 }
 
 type DataPoint struct {
 	Date  string
-	Value float32
+	Value float64
 }

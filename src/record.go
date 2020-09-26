@@ -17,42 +17,108 @@ type Location struct {
 	Continent         *string   `json:"continent"`
 	Name              *string   `json:"location"`
 	Color             *string   `json:"color"`
-	Population        *float32  `json:"population"`
-	PopulationDensity *float32  `json:"population_density"`
-	MedianAge         *float32  `json:"median_age"`
+	Population        *float64  `json:"population"`
+	PopulationDensity *float64  `json:"population_density"`
+	MedianAge         *float64  `json:"median_age"`
 	Data              []*Record `json:"data"`
+}
+
+func (l *Location) populateSmoothedData() {
+	sums := []float64{0, 0, 0, 0, 0, 0, 0}
+	for i := 0; i < len(l.Data); i++ {
+		data := l.Data[i]
+
+		// Add next data values
+		if data.NewCases != nil {
+			sums[0] += *data.NewCases
+		}
+		if data.NewCasesPerMillion != nil {
+			sums[1] += *data.NewCasesPerMillion
+		}
+		if data.NewDeaths != nil {
+			sums[2] += *data.NewDeaths
+		}
+		if data.NewDeathsPerMillion != nil {
+			sums[3] += *data.NewDeathsPerMillion
+		}
+		if data.NewTests != nil {
+			sums[4] += *data.NewTests
+		}
+		if data.NewTestsPerThousand != nil {
+			sums[5] += *data.NewTestsPerThousand
+		}
+		if data.PositiveRate != nil {
+			sums[6] += *data.PositiveRate
+		}
+
+		if i >= 6 {
+			// Calculate smoothed values
+			data.NewCasesSmoothed = getFloat64Pointer(sums[0] / 7)
+			data.NewCasesSmoothedPerMillion = getFloat64Pointer(sums[1] / 7)
+			data.NewDeathsSmoothed = getFloat64Pointer(sums[2] / 7)
+			data.NewDeathsSmoothedPerMillion = getFloat64Pointer(sums[3] / 7)
+			data.NewTestsSmoothed = getFloat64Pointer(sums[4] / 7)
+			data.NewTestsSmoothedPerThousand = getFloat64Pointer(sums[5] / 7)
+			data.PositiveRateSmoothed = getFloat64Pointer(sums[6] / 7)
+
+			data := l.Data[i-6]
+
+			// Subtract old data values
+			if data.NewCases != nil {
+				sums[0] -= *data.NewCases
+			}
+			if data.NewCasesPerMillion != nil {
+				sums[1] -= *data.NewCasesPerMillion
+			}
+			if data.NewDeaths != nil {
+				sums[2] -= *data.NewDeaths
+			}
+			if data.NewDeathsPerMillion != nil {
+				sums[3] -= *data.NewDeathsPerMillion
+			}
+			if data.NewTests != nil {
+				sums[4] -= *data.NewTests
+			}
+			if data.NewTestsPerThousand != nil {
+				sums[5] -= *data.NewTestsPerThousand
+			}
+			if data.PositiveRate != nil {
+				sums[6] -= *data.PositiveRate
+			}
+		}
+	}
 }
 
 type Record struct {
 	Date                        jsonDate `json:"date"`
-	TotalCases                  *float32 `json:"total_cases"`
-	TotalCasesPerMillion        *float32 `json:"total_cases_per_million"`
-	NewCases                    *float32 `json:"new_cases"`
-	NewCasesSmoothed            *float32 `json:"new_cases_smoothed"`
-	NewCasesPerMillion          *float32 `json:"new_cases_per_million"`
-	NewCasesSmoothedPerMillion  *float32 `json:"new_cases_smoothed_per_million"`
-	TotalDeaths                 *float32 `json:"total_deaths"`
-	TotalDeathsPerMillion       *float32 `json:"total_deaths_per_million"`
-	NewDeaths                   *float32 `json:"new_deaths"`
-	NewDeathsSmoothed           *float32 `json:"new_deaths_smoothed"`
-	NewDeathsPerMillion         *float32 `json:"new_deaths_per_million"`
-	NewDeathsSmoothedPerMillion *float32 `json:"new_deaths_smoothed_per_million"`
-	TotalTests                  *float32 `json:"total_tests"`
-	TotalTestsPerThousand       *float32 `json:"total_tests_per_thousand"`
-	NewTests                    *float32 `json:"new_tests"`
-	NewTestsSmoothed            *float32 `json:"new_tests_smoothed"`
-	NewTestsPerThousand         *float32 `json:"new_tests_per_thousand"`
-	NewTestsSmoothedPerThousand *float32 `json:"new_tests_smoothed_per_thousand"`
-	TestsPerCase                *float32 `json:"tests_per_case"`
-	PositiveRate                *float32 `json:"positive_rate"`
-	PositiveRateSmoothed        *float32 `json:"positive_rate_smoothed"`
+	TotalCases                  *float64 `json:"total_cases"`
+	TotalCasesPerMillion        *float64 `json:"total_cases_per_million"`
+	NewCases                    *float64 `json:"new_cases"`
+	NewCasesSmoothed            *float64 `json:"new_cases_smoothed"`
+	NewCasesPerMillion          *float64 `json:"new_cases_per_million"`
+	NewCasesSmoothedPerMillion  *float64 `json:"new_cases_smoothed_per_million"`
+	TotalDeaths                 *float64 `json:"total_deaths"`
+	TotalDeathsPerMillion       *float64 `json:"total_deaths_per_million"`
+	NewDeaths                   *float64 `json:"new_deaths"`
+	NewDeathsSmoothed           *float64 `json:"new_deaths_smoothed"`
+	NewDeathsPerMillion         *float64 `json:"new_deaths_per_million"`
+	NewDeathsSmoothedPerMillion *float64 `json:"new_deaths_smoothed_per_million"`
+	TotalTests                  *float64 `json:"total_tests"`
+	TotalTestsPerThousand       *float64 `json:"total_tests_per_thousand"`
+	NewTests                    *float64 `json:"new_tests"`
+	NewTestsSmoothed            *float64 `json:"new_tests_smoothed"`
+	NewTestsPerThousand         *float64 `json:"new_tests_per_thousand"`
+	NewTestsSmoothedPerThousand *float64 `json:"new_tests_smoothed_per_thousand"`
+	TestsPerCase                *float64 `json:"tests_per_case"`
+	PositiveRate                *float64 `json:"positive_rate"`
+	PositiveRateSmoothed        *float64 `json:"positive_rate_smoothed"`
 }
 
 func (r Record) getDate() time.Time {
 	return time.Time(r.Date)
 }
 
-func (r Record) getField(field string) *float32 {
+func (r Record) getField(field string) *float64 {
 	switch field {
 	case TotalCases:
 		return r.TotalCases
@@ -111,12 +177,12 @@ func (r Record) getField(field string) *float32 {
 type StateRecord struct {
 	Date        jsonDate `json:"date"`
 	State       *string  `json:"state"`
-	TotalCases  *float32 `json:"positive"`
-	NewCases    *float32 `json:"positiveIncrease"`
-	TotalDeaths *float32 `json:"death"`
-	NewDeaths   *float32 `json:"deathIncrease"`
-	TotalTests  *float32 `json:"totalTestResults"`
-	NewTests    *float32 `json:"totalTestResultsIncrease"`
+	TotalCases  *float64 `json:"positive"`
+	NewCases    *float64 `json:"positiveIncrease"`
+	TotalDeaths *float64 `json:"death"`
+	NewDeaths   *float64 `json:"deathIncrease"`
+	TotalTests  *float64 `json:"totalTestResults"`
+	NewTests    *float64 `json:"totalTestResultsIncrease"`
 }
 
 func (r StateRecord) getDate() time.Time {
@@ -148,17 +214,17 @@ func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[strin
 			locations[*stateRecord.State] = location
 		}
 
-		var positiveRate float32
+		var positiveRate float64
 		if stateRecord.NewCases != nil && stateRecord.NewTests != nil && *stateRecord.NewTests != 0 {
 			positiveRate = *stateRecord.NewCases / *stateRecord.NewTests
 		}
 
-		var totalCasesPerMillion float32
-		var newCasesPerMillion float32
-		var totalDeathsPerMillion float32
-		var newDeathsPerMillion float32
-		var totalTestsPerThousand float32
-		var newTestsPerThousand float32
+		var totalCasesPerMillion float64
+		var newCasesPerMillion float64
+		var totalDeathsPerMillion float64
+		var newDeathsPerMillion float64
+		var totalTestsPerThousand float64
+		var newTestsPerThousand float64
 		if population := location.Population; population != nil {
 			popMillion := *population / 1000000
 			popThousand := *population / 1000
@@ -183,18 +249,6 @@ func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[strin
 			}
 		}
 
-		var positiveRateSmoothed float32
-		if len(location.Data) >= 7 {
-			var sum float32
-			for i := 1; i <= 7; i++ {
-				value := location.Data[len(location.Data)-i].PositiveRate
-				if value != nil {
-					sum += *value
-				}
-			}
-			positiveRateSmoothed = sum / 7
-		}
-
 		record := &Record{
 			Date:                  stateRecord.Date,
 			TotalCases:            stateRecord.TotalCases,
@@ -210,7 +264,6 @@ func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[strin
 			NewTests:              stateRecord.NewTests,
 			NewTestsPerThousand:   &newTestsPerThousand,
 			PositiveRate:          &positiveRate,
-			PositiveRateSmoothed:  &positiveRateSmoothed,
 		}
 		location.Data = append(location.Data, record)
 	}
@@ -222,9 +275,13 @@ type StateMetadata struct {
 	Name       *string  `json:"name"`
 	Type       *string  `json:"type"`
 	Color      *string  `json:"color"`
-	Population *float32 `json:"population"`
+	Population *float64 `json:"population"`
 }
 
 func getStringPointer(s string) *string {
 	return &s
+}
+
+func getFloat64Pointer(f float64) *float64 {
+	return &f
 }
