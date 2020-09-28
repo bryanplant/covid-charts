@@ -21,27 +21,33 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 
 	locations, _ := readData()
 
-	selections := body.Locations
-	if len(selections) == 1 && selections[0] == "allStates" || selections[0] == "allCountries" {
-		var locationType string
-		if selections[0] == "allStates" {
-			locationType = LocationTypeState
-		} else if selections[0] == "allCountries" {
-			locationType = LocationTypeCountry
+	selections := map[string]bool{}
+	for _, location := range body.Locations {
+		selections[location] = true
+	}
+
+	_, allStates := selections["allStates"]
+	_, allCountries := selections["allCountries"]
+	delete(selections, "allStates")
+	delete(selections, "allCountries")
+	for name, location := range locations {
+		if allStates && *location.Type == LocationTypeState {
+			selections[name] = true
 		}
 
-		selections = []string{}
-
-		for name, location := range locations {
-			if location.Type == locationType {
-				selections = append(selections, name)
-			}
+		if allCountries && *location.Type == LocationTypeCountry {
+			selections[name] = true
 		}
 	}
 
 	var lines []Line
-	for _, location := range selections {
-		line := getLine(locations, location, body.YStat)
+	for location, _ := range selections {
+		locationData, ok := locations[location]
+		if !ok {
+			log.Print("Could not find location: " + location)
+			continue
+		}
+		line := getLine(locationData, body.YStat)
 		lines = append(lines, line)
 	}
 
@@ -66,8 +72,8 @@ func Options(w http.ResponseWriter, _ *http.Request) {
 
 	var locations []string
 	for _, locationData := range data {
-		if locationData.Name != nil {
-			locations = append(locations, *locationData.Name)
+		if locationData.FullName != nil {
+			locations = append(locations, *locationData.FullName)
 		}
 	}
 
@@ -89,11 +95,9 @@ func Options(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func getLine(locations map[string]*Location, location, stat string) Line {
-	locationData := locations[location]
-
+func getLine(location *Location, stat string) Line {
 	var dataPoints []DataPoint
-	for _, item := range locationData.Data {
+	for _, item := range location.Data {
 		if value := item.getField(stat); value != nil && *value >= 0 {
 			dataPoint := DataPoint{
 				Date:  item.getDate().Format(DateLayout),
@@ -104,9 +108,9 @@ func getLine(locations map[string]*Location, location, stat string) Line {
 	}
 
 	return Line{
-		ID:          location,
-		DisplayName: *locationData.Name,
-		Color:       *locationData.Color,
+		ID:          *location.Abbreviation,
+		DisplayName: *location.FullName,
+		Color:       *location.Color,
 		Data:        dataPoints,
 	}
 }
@@ -132,12 +136,12 @@ func readData() (map[string]*Location, []string) {
 
 	var countries map[string]*Location
 	getDataFromFile(CountryFile, &countries)
-	for _, country := range countries {
-		country.Type = LocationTypeCountry
-	}
-	for name, country := range countries {
-		locations[name] = country
-		locations[name].Color = getStringPointer("")
+	for abbreviation, country := range countries {
+		country.Type = getStringPointer(LocationTypeCountry)
+		country.Abbreviation = getStringPointer(abbreviation)
+		country.Color = getStringPointer("")
+
+		locations[*country.FullName] = country
 	}
 
 	var stateRecords []StateRecord

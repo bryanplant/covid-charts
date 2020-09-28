@@ -13,9 +13,10 @@ const (
 )
 
 type Location struct {
-	Type              string    `json:"type"`
+	Type              *string   `json:"type"`
 	Continent         *string   `json:"continent"`
-	Name              *string   `json:"location"`
+	FullName          *string   `json:"location"`
+	Abbreviation      *string   `json:"abbreviation"`
 	Color             *string   `json:"color"`
 	Population        *float64  `json:"population"`
 	PopulationDensity *float64  `json:"population_density"`
@@ -175,14 +176,14 @@ func (r Record) getField(field string) *float64 {
 }
 
 type StateRecord struct {
-	Date        jsonDate `json:"date"`
-	State       *string  `json:"state"`
-	TotalCases  *float64 `json:"positive"`
-	NewCases    *float64 `json:"positiveIncrease"`
-	TotalDeaths *float64 `json:"death"`
-	NewDeaths   *float64 `json:"deathIncrease"`
-	TotalTests  *float64 `json:"totalTestResults"`
-	NewTests    *float64 `json:"totalTestResultsIncrease"`
+	Date         jsonDate `json:"date"`
+	Abbreviation *string  `json:"state"`
+	TotalCases   *float64 `json:"positive"`
+	NewCases     *float64 `json:"positiveIncrease"`
+	TotalDeaths  *float64 `json:"death"`
+	NewDeaths    *float64 `json:"deathIncrease"`
+	TotalTests   *float64 `json:"totalTestResults"`
+	NewTests     *float64 `json:"totalTestResultsIncrease"`
 }
 
 func (r StateRecord) getDate() time.Time {
@@ -196,22 +197,24 @@ func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[strin
 
 	locations := map[string]*Location{}
 	for _, stateRecord := range stateRecords {
-		location, ok := locations[*stateRecord.State]
+		metadata, ok := stateMetadata[*stateRecord.Abbreviation]
+		if !ok {
+			log.Fatal("Could not find state metadata for: " + *stateRecord.Abbreviation)
+		}
+
+		location, ok := locations[*metadata.FullName]
 		if !ok {
 			location = &Location{
-				Continent: getStringPointer("North America"),
-				Name:      stateRecord.State,
-				Data:      []*Record{},
+				Type:         metadata.Type,
+				Continent:    getStringPointer("North America"),
+				FullName:     metadata.FullName,
+				Abbreviation: stateRecord.Abbreviation,
+				Color: metadata.Color,
+				Population: metadata.Population,
+				Data:         []*Record{},
 			}
 
-			if metadata, ok := stateMetadata[*location.Name]; ok {
-				location.Name = metadata.Name
-				location.Type = *metadata.Type
-				location.Color = metadata.Color
-				location.Population = metadata.Population
-			}
-
-			locations[*stateRecord.State] = location
+			locations[*metadata.FullName] = location
 		}
 
 		var positiveRate float64
@@ -272,7 +275,7 @@ func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[strin
 }
 
 type StateMetadata struct {
-	Name       *string  `json:"name"`
+	FullName   *string  `json:"name"`
 	Type       *string  `json:"type"`
 	Color      *string  `json:"color"`
 	Population *float64 `json:"population"`
