@@ -19,6 +19,8 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 
 	body := readRequest(r)
 
+	log.Println("Get Chart Data: " + strings.Join(body.Locations, ","))
+
 	locations, _ := readData()
 
 	selections := map[string]bool{}
@@ -44,12 +46,16 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 	for location, _ := range selections {
 		locationData, ok := locations[location]
 		if !ok {
-			log.Print("Could not find location: " + location)
+			log.Println("Could not find location: " + location)
 			continue
 		}
 		line := getLine(locationData, body.YStat)
 		lines = append(lines, line)
 	}
+
+	sort.Slice(lines, func(i, j int) bool {
+		return lines[i].DisplayName < lines[j].DisplayName
+	})
 
 	bytes, err := json.Marshal(lines)
 	if err != nil {

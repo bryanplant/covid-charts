@@ -2,13 +2,13 @@ package src
 
 // Common consts
 const (
-	Countries  = "countries"
-	XStat      = "x_stat"
-	YStat      = "y_stat"
-	CountryFile = "resources/owid-covid-data.json"
-	StateFile   = "resources/states.json"
+	Countries         = "countries"
+	XStat             = "x_stat"
+	YStat             = "y_stat"
+	CountryFile       = "resources/owid-covid-data.json"
+	StateFile         = "resources/states.json"
 	StateMetadataFile = "resources/state-metadata.json"
-	DateLayout = "2006-01-02"
+	DateLayout        = "2006-01-02"
 
 	Date = "date"
 )
@@ -39,9 +39,9 @@ const (
 	NewTestsPerThousand         = "new_tests_per_thousand"
 	NewTestsSmoothedPerThousand = "new_tests_smoothed_per_thousand"
 
-	PositiveRate = "positive_rate"
+	PositiveRate         = "positive_rate"
 	PositiveRateSmoothed = "positive_rate_smoothed"
-	TestsPerCase = "tests_per_case"
+	TestsPerCase         = "tests_per_case"
 
 	Population        = "population"
 	PopulationDensity = "population_density"
