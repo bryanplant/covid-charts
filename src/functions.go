@@ -21,7 +21,7 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Get Chart Data: " + strings.Join(body.Locations, ","))
 
-	locations, _ := readData()
+	locations, _ := readData(nil)
 
 	selections := map[string]bool{}
 	for _, location := range body.Locations {
@@ -49,7 +49,7 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 			log.Println("Could not find location: " + location)
 			continue
 		}
-		line := getLine(locationData, body.YStat)
+		line := getLine(locationData, *body.YStat)
 		lines = append(lines, line)
 	}
 
@@ -68,13 +68,15 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Options(w http.ResponseWriter, _ *http.Request) {
+func Options(w http.ResponseWriter, r *http.Request) {
 	//Allow CORS here By * or specific origin
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	data, stats := readData()
+	body := readRequest(r)
+
+	data, stats := readData(body.LocationType)
 
 	var locations []string
 	for _, locationData := range data {
@@ -137,28 +139,43 @@ func readRequest(r *http.Request) *Request {
 	return body
 }
 
-func readData() (map[string]*Location, []string) {
-	locations := map[string]*Location{}
-
-	var countries map[string]*Location
-	getDataFromFile(CountryFile, &countries)
-	for abbreviation, country := range countries {
-		country.Type = getStringPointer(LocationTypeCountry)
-		country.Abbreviation = getStringPointer(abbreviation)
-		country.Color = getStringPointer("")
-
-		locations[*country.FullName] = country
+func readData(locationType *string) (map[string]*Location, []string) {
+	addCountries := false
+	if locationType == nil || *locationType == LocationTypeCountry {
+		addCountries = true
+	}
+	addStates := true
+	if locationType == nil || *locationType == LocationTypeState {
+		addStates = true
 	}
 
-	var stateRecords []StateRecord
-	getDataFromFile(StateFile, &stateRecords)
+	locations := map[string]*Location{}
 
-	var stateMetadata map[string]StateMetadata
-	getDataFromFile(StateMetadataFile, &stateMetadata)
+	if addCountries {
+		var countries map[string]*Location
+		getDataFromFile(CountryFile, &countries)
+		for abbreviation, country := range countries {
+			country.Type = getStringPointer(LocationTypeCountry)
+			country.Abbreviation = getStringPointer(abbreviation)
+			country.Color = getStringPointer("")
 
-	states := StateRecordsToLocations(stateRecords, stateMetadata)
-	for name, state := range states {
-		locations[name] = state
+			locations[*country.FullName] = country
+		}
+	}
+
+	if addStates {
+		var stateRecords []StateRecord
+		getDataFromFile(StateFile, &stateRecords)
+
+		var stateMetadata map[string]StateMetadata
+		getDataFromFile(StateMetadataFile, &stateMetadata)
+
+		states := StateRecordsToLocations(stateRecords, stateMetadata)
+		for name, state := range states {
+			if *state.Type == LocationTypeState {
+				locations[name] = state
+			}
+		}
 	}
 
 	for _, location := range locations {
@@ -200,9 +217,10 @@ func getFile(path string) *os.File {
 }
 
 type Request struct {
-	Locations []string `json:"locations"`
-	XStat     string   `json:"x_stat"`
-	YStat     string   `json:"y_stat"`
+	Locations    []string `json:"locations"`
+	LocationType *string  `json:"location_type,omitempty"`
+	XStat        *string  `json:"x_stat"`
+	YStat        *string  `json:"y_stat"`
 }
 
 type Line struct {
