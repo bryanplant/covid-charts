@@ -162,6 +162,10 @@ func readData(locationType *string) (map[string]*Location, []string) {
 		var countries map[string]*Location
 		getDataFromFile(CountryFile, &countries)
 		for abbreviation, country := range countries {
+			if abbreviation == "GEO" {
+				// Remove Georgia -- conflicts with state
+				continue
+			}
 			country.Type = getStringPointer(LocationTypeCountry)
 			country.Abbreviation = getStringPointer(abbreviation)
 			country.Color = getStringPointer("")
