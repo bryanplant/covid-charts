@@ -28,10 +28,10 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 		selections[location] = true
 	}
 
-	_, allStates := selections["allStates"]
-	_, allCountries := selections["allCountries"]
-	delete(selections, "allStates")
-	delete(selections, "allCountries")
+	_, allStates := selections["All States"]
+	_, allCountries := selections["All Countries"]
+	delete(selections, "All States")
+	delete(selections, "All Countries")
 	for name, location := range locations {
 		if allStates && *location.Type == LocationTypeState {
 			selections[name] = true
@@ -75,6 +75,13 @@ func Options(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	body := readRequest(r)
+
+	locationType := "all"
+	if body.LocationType != nil {
+		locationType = *body.LocationType
+	}
+
+	log.Println("Get Options: " + locationType)
 
 	data, stats := readData(body.LocationType)
 
@@ -144,7 +151,7 @@ func readData(locationType *string) (map[string]*Location, []string) {
 	if locationType == nil || *locationType == LocationTypeCountry {
 		addCountries = true
 	}
-	addStates := true
+	addStates := false
 	if locationType == nil || *locationType == LocationTypeState {
 		addStates = true
 	}
