@@ -1,17 +1,12 @@
 package src
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 	"time"
-
-	"google.golang.org/api/iterator"
 )
 
 type Line struct {
@@ -34,33 +29,28 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	err := os.Setenv("FIRESTORE_EMULATOR_HOST", "localhost:8079")
-	if err != nil {
-		log.Fatalf("Could not set emulator host: %v", err)
-	}
-
-	ctx := context.Background()
-	client := getFirebaseClient(ctx)
-	_, _, err = client.Collection("users").Add(ctx, map[string]interface{}{
-		"first": "Ada",
-		"last":  "Lovelace",
-		"born":  1815,
-	})
-	if err != nil {
-		log.Fatalf("Failed adding alovelace: %v", err)
-	}
-
-	iter := client.Collection("users").Documents(ctx)
-	for {
-		doc, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
-		}
-		fmt.Println(doc.Data())
-	}
+	//ctx := context.Background()
+	//client := getFirebaseClient(ctx)
+	//_, _, err := client.Collection("users").Add(ctx, map[string]interface{}{
+	//	"first": "Ada",
+	//	"last":  "Lovelace",
+	//	"born":  1815,
+	//})
+	//if err != nil {
+	//	log.Fatalf("Failed adding alovelace: %v", err)
+	//}
+	//
+	//iter := client.Collection("users").Documents(ctx)
+	//for {
+	//	doc, err := iter.Next()
+	//	if err == iterator.Done {
+	//		break
+	//	}
+	//	if err != nil {
+	//		log.Fatalf("Failed to iterate: %v", err)
+	//	}
+	//	fmt.Println(doc.Data())
+	//}
 
 	body := readRequest(r)
 

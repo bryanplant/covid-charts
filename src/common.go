@@ -122,7 +122,7 @@ func getFile(path string) *os.File {
 	if err != nil {
 		file, err = os.Open("src/" + path)
 		if err != nil {
-			file, err = os.Open("src/src/" + path)
+			file, err = os.Open("serverless_function_source_code/src/" + path)
 			if err != nil {
 				log.Fatalln("Couldn't open the file", err)
 			}
