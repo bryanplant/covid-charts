@@ -84,6 +84,16 @@ func readCountries() map[string]*Location {
 			// Remove Georgia -- conflicts with state
 			continue
 		}
+
+		// Parse dates from strings
+		for _, record := range country.Data {
+			date, err := parseDate(*record.JsonDate)
+			if err != nil {
+				log.Fatal("Could not parse country record date: " + *record.JsonDate)
+			}
+			record.Date = date
+		}
+
 		country.Type = getStringPointer(LocationTypeCountry)
 		country.Abbreviation = getStringPointer(abbreviation)
 		country.Color = getStringPointer("")
@@ -96,7 +106,7 @@ func readCountries() map[string]*Location {
 }
 
 func readStates() map[string]*Location {
-	var stateRecords []StateRecord
+	var stateRecords []*StateRecord
 	getDataFromFile(StateFile, &stateRecords)
 
 	var stateMetadata map[string]StateMetadata

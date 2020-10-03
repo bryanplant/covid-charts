@@ -3,7 +3,7 @@ package src
 import (
 	"log"
 	"sort"
-	"strings"
+	"strconv"
 	"time"
 )
 
@@ -93,7 +93,8 @@ func (l *Location) populateSmoothedData() {
 }
 
 type Record struct {
-	Date                        jsonDate `json:"date"`
+	Date                        *time.Time
+	JsonDate                    *string  `json:"date"`
 	TotalCases                  *float64 `json:"total_cases"`
 	TotalCasesPerMillion        *float64 `json:"total_cases_per_million"`
 	NewCases                    *float64 `json:"new_cases"`
@@ -115,10 +116,6 @@ type Record struct {
 	TestsPerCase                *float64 `json:"tests_per_case"`
 	PositiveRate                *float64 `json:"positive_rate"`
 	PositiveRateSmoothed        *float64 `json:"positive_rate_smoothed"`
-}
-
-func (r Record) getDate() time.Time {
-	return time.Time(r.Date)
 }
 
 func (r Record) getField(field string) *float64 {
@@ -178,7 +175,8 @@ func (r Record) getField(field string) *float64 {
 }
 
 type StateRecord struct {
-	Date         jsonDate `json:"date"`
+	Date         *time.Time
+	JsonDate     *int     `json:"date"`
 	Abbreviation *string  `json:"state"`
 	TotalCases   *float64 `json:"positive"`
 	NewCases     *float64 `json:"positiveIncrease"`
@@ -188,13 +186,26 @@ type StateRecord struct {
 	NewTests     *float64 `json:"totalTestResultsIncrease"`
 }
 
-func (r StateRecord) getDate() time.Time {
-	return time.Time(r.Date)
-}
+func StateRecordsToLocations(stateRecords []*StateRecord, stateMetadata map[string]StateMetadata) map[string]*Location {
+	for _, stateRecord := range stateRecords {
+		if stateRecord.JsonDate != nil {
+			date, err := parseDate(strconv.Itoa(*stateRecord.JsonDate))
+			if err != nil {
+				log.Fatal("Could not parse state record date: " + strconv.Itoa(*stateRecord.JsonDate))
+			}
+			stateRecord.Date = date
+		}
+	}
 
-func StateRecordsToLocations(stateRecords []StateRecord, stateMetadata map[string]StateMetadata) map[string]*Location {
 	sort.Slice(stateRecords, func(i, j int) bool {
-		return stateRecords[i].getDate().Before(stateRecords[j].getDate())
+		if stateRecords[i].Date == nil {
+			return true
+		}
+		if stateRecords[i].Date == nil {
+			return false
+		}
+
+		return stateRecords[i].Date.Before(*stateRecords[j].Date)
 	})
 
 	locations := map[string]*Location{}
@@ -283,26 +294,18 @@ type StateMetadata struct {
 	Population *float64 `json:"population"`
 }
 
-type jsonDate time.Time
-
-func (j *jsonDate) UnmarshalJSON(b []byte) error {
-	var t time.Time
+func parseDate(value string) (*time.Time, error) {
+	var date time.Time
 	var err error
 
-	s := strings.Trim(string(b), "\"")
-	t, err = time.Parse("2006-01-02", s)
+	date, err = time.Parse("2006-01-02", value)
 	if err != nil {
-		t, err = time.Parse("20060102", s)
+		date, err = time.Parse("20060102", value)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	*j = jsonDate(t)
-	return nil
-}
-
-func (j *jsonDate) String() string {
-	return time.Time(*j).Format(DateLayout)
+	return &date, nil
 }
 
 func getStringPointer(s string) *string {

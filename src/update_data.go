@@ -38,6 +38,8 @@ func UpdateData(w http.ResponseWriter, r *http.Request) {
 	}
 	updateLocationOptions(ctx, client, allLocations, LocationTypeAll)
 
+	updateLocations(ctx, client, allLocations)
+
 	elapsed := time.Since(start)
 	log.Printf("UpdateData took %s", elapsed)
 }
@@ -53,5 +55,17 @@ func updateLocationOptions(ctx context.Context, client *firestore.Client, locati
 	})
 	if err != nil {
 		log.Fatalf("Failed adding option: %s, %v", locationType, err)
+	}
+}
+
+func updateLocations(ctx context.Context, client *firestore.Client, locations map[string]*Location) {
+	for name, location := range locations {
+		_, err := client.Collection("data").Doc(name).Set(ctx, map[string]interface{}{
+			"data": location,
+		})
+
+		if err != nil {
+			log.Fatalf("Failed adding data: %s, %v", "United States", err)
+		}
 	}
 }
