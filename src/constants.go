@@ -2,15 +2,11 @@ package src
 
 // Common consts
 const (
-	Countries         = "countries"
-	XStat             = "x_stat"
-	YStat             = "y_stat"
-	CountryFile       = "resources/owid-covid-data.json"
-	StateFile         = "resources/states.json"
-	StateMetadataFile = "resources/state-metadata.json"
-	DateLayout        = "2006-01-02"
-
-	Date = "date"
+	XStat      = "x_stat"
+	YStat      = "y_stat"
+	CountryURL = "https://covid.ourworldindata.org/data/owid-covid-data.json"
+	StateURL   = "https://api.covidtracking.com/v1/states/daily.json"
+	DateLayout = "2006-01-02"
 )
 
 // World data consts

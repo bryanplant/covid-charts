@@ -1,14 +1,17 @@
 package src
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
+
+	"cloud.google.com/go/firestore"
 )
 
-func UpdateData(w http.ResponseWriter, r *http.Request) {
+func UpdateData(w http.ResponseWriter, _ *http.Request) {
 	start := time.Now()
 
 	//Allow CORS here By * or specific origin
@@ -67,5 +70,80 @@ func updateLocations(ctx context.Context, client *firestore.Client, locations ma
 		if err != nil {
 			log.Fatalf("Failed adding data: %s, %v", "United States", err)
 		}
+	}
+}
+
+func readCountries() map[string]*Location {
+	var countries map[string]*Location
+	getDataFromURL(CountryURL, &countries)
+
+	locations := map[string]*Location{}
+	for abbreviation, country := range countries {
+		if abbreviation == "GEO" {
+			// Remove Georgia -- conflicts with state
+			continue
+		}
+
+		// Parse dates from strings
+		for _, record := range country.Data {
+			date, err := parseDate(*record.JsonDate)
+			if err != nil {
+				log.Fatal("Could not parse country record date: " + *record.JsonDate)
+			}
+			record.Date = date
+		}
+
+		country.Type = getStringPointer(LocationTypeCountry)
+		country.Abbreviation = getStringPointer(abbreviation)
+		country.Color = getStringPointer("")
+		country.populateSmoothedData()
+
+		locations[*country.FullName] = country
+	}
+
+	return locations
+}
+
+func readStates() map[string]*Location {
+	var stateRecords []*StateRecord
+	getDataFromURL(StateURL, &stateRecords)
+
+	var stateMetadata map[string]StateMetadata
+	getDataFromString(StateMetadataJSON, &stateMetadata)
+
+	states := StateRecordsToLocations(stateRecords, stateMetadata)
+
+	locations := map[string]*Location{}
+	for name, state := range states {
+		if *state.Type == LocationTypeState {
+			state.populateSmoothedData()
+			locations[name] = state
+		}
+	}
+
+	return locations
+}
+
+func getDataFromURL(url string, data interface{}) {
+	response, err := http.Get(url)
+	if err != nil {
+		log.Fatalf("Failed to get url: %s %v", url, err)
+		return
+	}
+
+	bytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func getDataFromString(s string, data interface{}) {
+	err := json.Unmarshal([]byte(s), &data)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
