@@ -87,6 +87,7 @@ func readCountries() map[string]*Location {
 		country.Type = getStringPointer(LocationTypeCountry)
 		country.Abbreviation = getStringPointer(abbreviation)
 		country.Color = getStringPointer("")
+		country.populateSmoothedData()
 
 		locations[*country.FullName] = country
 	}
