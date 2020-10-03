@@ -29,34 +29,11 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	//ctx := context.Background()
-	//client := getFirebaseClient(ctx)
-	//_, _, err := client.Collection("users").Add(ctx, map[string]interface{}{
-	//	"first": "Ada",
-	//	"last":  "Lovelace",
-	//	"born":  1815,
-	//})
-	//if err != nil {
-	//	log.Fatalf("Failed adding alovelace: %v", err)
-	//}
-	//
-	//iter := client.Collection("users").Documents(ctx)
-	//for {
-	//	doc, err := iter.Next()
-	//	if err == iterator.Done {
-	//		break
-	//	}
-	//	if err != nil {
-	//		log.Fatalf("Failed to iterate: %v", err)
-	//	}
-	//	fmt.Println(doc.Data())
-	//}
-
 	body := readRequest(r)
 
 	log.Println("Get Chart Data: " + strings.Join(body.Locations, ","))
 
-	locations, _ := readData(nil)
+	locations, _ := readData(LocationTypeAll)
 
 	selections := map[string]bool{}
 	for _, location := range body.Locations {

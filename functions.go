@@ -12,3 +12,7 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 func Options(w http.ResponseWriter, r *http.Request) {
 	src.Options(w, r)
 }
+
+func UpdateData(w http.ResponseWriter, r *http.Request) {
+	src.UpdateData(w, r)
+}

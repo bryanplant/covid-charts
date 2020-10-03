@@ -46,59 +46,72 @@ func readRequest(r *http.Request) *Request {
 	return body
 }
 
-func readData(locationType *string) (map[string]*Location, []string) {
+func readData(locationType string) (map[string]*Location, []string) {
 	start := time.Now()
 
-	addCountries := false
-	if locationType == nil || *locationType == LocationTypeCountry {
-		addCountries = true
-	}
-	addStates := false
-	if locationType == nil || *locationType == LocationTypeState {
-		addStates = true
-	}
+	addCountries := locationType == LocationTypeCountry || locationType == LocationTypeAll
+	addStates := locationType == LocationTypeState || locationType == LocationTypeAll
 
 	locations := map[string]*Location{}
 
 	if addCountries {
-		var countries map[string]*Location
-		getDataFromFile(CountryFile, &countries)
-		for abbreviation, country := range countries {
-			if abbreviation == "GEO" {
-				// Remove Georgia -- conflicts with state
-				continue
-			}
-			country.Type = getStringPointer(LocationTypeCountry)
-			country.Abbreviation = getStringPointer(abbreviation)
-			country.Color = getStringPointer("")
-
-			locations[*country.FullName] = country
+		countries := readCountries()
+		for name, country := range countries {
+			locations[name] = country
 		}
 	}
 
 	if addStates {
-		var stateRecords []StateRecord
-		getDataFromFile(StateFile, &stateRecords)
-
-		var stateMetadata map[string]StateMetadata
-		getDataFromFile(StateMetadataFile, &stateMetadata)
-
-		states := StateRecordsToLocations(stateRecords, stateMetadata)
+		states := readStates()
 		for name, state := range states {
-			if *state.Type == LocationTypeState {
-				locations[name] = state
-			}
+			locations[name] = state
 		}
-	}
-
-	for _, location := range locations {
-		location.populateSmoothedData()
 	}
 
 	elapsed := time.Since(start)
 	log.Printf("Reading data took %s", elapsed)
 
 	return locations, []string{}
+}
+
+func readCountries() map[string]*Location {
+	var countries map[string]*Location
+	getDataFromFile(CountryFile, &countries)
+
+	locations := map[string]*Location{}
+	for abbreviation, country := range countries {
+		if abbreviation == "GEO" {
+			// Remove Georgia -- conflicts with state
+			continue
+		}
+		country.Type = getStringPointer(LocationTypeCountry)
+		country.Abbreviation = getStringPointer(abbreviation)
+		country.Color = getStringPointer("")
+
+		locations[*country.FullName] = country
+	}
+
+	return locations
+}
+
+func readStates() map[string]*Location {
+	var stateRecords []StateRecord
+	getDataFromFile(StateFile, &stateRecords)
+
+	var stateMetadata map[string]StateMetadata
+	getDataFromFile(StateMetadataFile, &stateMetadata)
+
+	states := StateRecordsToLocations(stateRecords, stateMetadata)
+
+	locations := map[string]*Location{}
+	for name, state := range states {
+		if *state.Type == LocationTypeState {
+			state.populateSmoothedData()
+			locations[name] = state
+		}
+	}
+
+	return locations
 }
 
 func getDataFromFile(filename string, data interface{}) {

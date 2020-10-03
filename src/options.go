@@ -1,11 +1,14 @@
 package src
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"sort"
 	"time"
+
+	"cloud.google.com/go/firestore"
 )
 
 func Options(w http.ResponseWriter, r *http.Request) {
@@ -13,35 +16,22 @@ func Options(w http.ResponseWriter, r *http.Request) {
 
 	//Allow CORS here By * or specific origin
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	body := readRequest(r)
 
-	locationType := "all"
+	locationType := LocationTypeAll
 	if body.LocationType != nil {
 		locationType = *body.LocationType
 	}
 
 	log.Println("Get Options: " + locationType)
 
-	data, stats := readData(body.LocationType)
+	ctx := context.Background()
+	client := getFirebaseClient(ctx)
+	options := getLocationOptions(ctx, client, locationType)
 
-	var locations []string
-	for _, locationData := range data {
-		if locationData.FullName != nil {
-			locations = append(locations, *locationData.FullName)
-		}
-	}
-
-	sort.Strings(locations)
-	sort.Strings(stats)
-
-	options := map[string][]string{}
-	options["locations"] = locations
-	options["stats"] = stats
-
-	bytes, err := json.Marshal(locations)
+	bytes, err := json.Marshal(options)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,4 +43,20 @@ func Options(w http.ResponseWriter, r *http.Request) {
 
 	elapsed := time.Since(start)
 	log.Printf("Options took %s", elapsed)
+}
+
+func getLocationOptions(ctx context.Context, client *firestore.Client, locationType string) []string {
+	var optionsMap map[string][]string
+	doc, err := client.Collection("options").Doc(locationType).Get(ctx)
+	if err != nil {
+		log.Fatalf("Could not get options: %s", locationType)
+	}
+	err = doc.DataTo(&optionsMap)
+	if err != nil {
+		log.Fatalf("Could not cast options to list: %s", locationType)
+	}
+
+	options := optionsMap["list"]
+	sort.Strings(options)
+	return options
 }

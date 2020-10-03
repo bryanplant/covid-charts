@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	LocationTypeAll       = "all"
 	LocationTypeState     = "state"
 	LocationTypeCountry   = "country"
 	LocationTypeTerritory = "territory"

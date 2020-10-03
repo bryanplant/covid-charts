@@ -7,4 +7,5 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/GoogleCloudPlatform/functions-framework-go v1.1.0
 	github.com/stretchr/testify v1.5.1
+	google.golang.org/api v0.30.0
 )
