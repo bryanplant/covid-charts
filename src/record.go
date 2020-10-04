@@ -1,7 +1,6 @@
 package src
 
 import (
-	"log"
 	"sort"
 	"strconv"
 	"time"
@@ -175,7 +174,7 @@ func (r Record) getField(field string) *float64 {
 		return r.HospitalizedCurrently
 	}
 
-	log.Fatal("Unknown Record field: " + field)
+	panic("Unknown Record field: " + field)
 	return nil
 }
 
@@ -198,7 +197,7 @@ func StateRecordsToLocations(stateRecords []*StateRecord, stateMetadata map[stri
 		if stateRecord.JsonDate != nil {
 			date, err := parseDate(strconv.Itoa(*stateRecord.JsonDate))
 			if err != nil {
-				log.Fatal("Could not parse state record date: " + strconv.Itoa(*stateRecord.JsonDate))
+				panic("Could not parse state record date: " + strconv.Itoa(*stateRecord.JsonDate))
 			}
 			stateRecord.Date = date
 		}
@@ -219,7 +218,7 @@ func StateRecordsToLocations(stateRecords []*StateRecord, stateMetadata map[stri
 	for _, stateRecord := range stateRecords {
 		metadata, ok := stateMetadata[*stateRecord.Abbreviation]
 		if !ok {
-			log.Fatal("Could not find state metadata for: " + *stateRecord.Abbreviation)
+			panic("Could not find state metadata for: " + *stateRecord.Abbreviation)
 		}
 
 		location, ok := locations[*metadata.FullName]

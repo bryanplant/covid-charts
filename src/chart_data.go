@@ -3,6 +3,7 @@ package src
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -71,12 +72,12 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(lines)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	_, err = w.Write(bytes)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	elapsed := time.Since(start)
@@ -86,13 +87,13 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 func getLocation(ctx context.Context, client *firestore.Client, name string) *Location {
 	doc, err := client.Collection("data").Doc(name).Get(ctx)
 	if err != nil {
-		log.Fatalf("Failed getting location: %s, %v", name, err)
+		panic(fmt.Sprintf("Failed getting location: %s, %v", name, err))
 	}
 
 	var locationData map[string]*Location
 	err = doc.DataTo(&locationData)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal firestore data: %s, %v", name, err)
+		panic(fmt.Sprintf("Failed to unmarshal firestore data: %s, %v", name, err))
 	}
 
 	return locationData["data"]

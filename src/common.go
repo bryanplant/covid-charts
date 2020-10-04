@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	firebase "firebase.google.com/go"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -16,12 +15,12 @@ func getFirebaseClient(ctx context.Context) *firestore.Client {
 	conf := &firebase.Config{ProjectID: "covid-charts-289323"}
 	app, err := firebase.NewApp(ctx, conf)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 
 	client, err := app.Firestore(ctx)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 	return client
 }
@@ -30,13 +29,13 @@ func readRequest(r *http.Request) *Request {
 	buf := new(strings.Builder)
 	_, err := io.Copy(buf, r.Body)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	body := &Request{}
 	err = json.Unmarshal([]byte(buf.String()), body)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return body

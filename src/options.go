@@ -3,6 +3,7 @@ package src
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -37,27 +38,27 @@ func Options(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(options)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	_, err = w.Write(bytes)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	elapsed := time.Since(start)
-	log.Printf("Options took %s", elapsed)
+	log.Printf("Get Options took %s", elapsed)
 }
 
 func getOptions(ctx context.Context, client *firestore.Client, optionName string) []string {
 	var optionsMap map[string][]string
 	doc, err := client.Collection("options").Doc(optionName).Get(ctx)
 	if err != nil {
-		log.Fatalf("Could not get options: %s", optionName)
+		panic(fmt.Sprintf("Could not get options: %s", optionName))
 	}
 	err = doc.DataTo(&optionsMap)
 	if err != nil {
-		log.Fatalf("Could not cast options to list: %s", optionName)
+		panic(fmt.Sprintf("Could not cast options to list: %s", optionName))
 	}
 
 	options := optionsMap["list"]

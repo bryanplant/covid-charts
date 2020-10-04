@@ -3,6 +3,7 @@ package src
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -39,7 +40,6 @@ func UpdateData(w http.ResponseWriter, _ *http.Request) {
 	for k, v := range countries {
 		allLocations[k] = v
 	}
-
 	updateLocationOptions(ctx, client, allLocations, LocationTypeAll)
 
 	updateOptions(ctx, client, CountryStats, countryStatOptions)
@@ -65,7 +65,7 @@ func updateOptions(ctx context.Context, client *firestore.Client, optionName str
 		"list": options,
 	})
 	if err != nil {
-		log.Fatalf("Failed adding option: %s, %v", optionName, err)
+		panic(fmt.Sprintf("Failed adding option: %s, %v", optionName, err))
 	}
 }
 
@@ -76,7 +76,7 @@ func updateLocations(ctx context.Context, client *firestore.Client, locations ma
 		})
 
 		if err != nil {
-			log.Fatalf("Failed adding data: %s, %v", "United States", err)
+			panic(fmt.Sprintf("Failed adding data: %s, %v", "United States", err))
 		}
 	}
 }
@@ -85,6 +85,7 @@ func readCountries() map[string]*Location {
 	var countries map[string]*Location
 	getDataFromURL(CountryURL, &countries)
 
+	remove := map[string]bool{}
 	locations := map[string]*Location{}
 	for abbreviation, country := range countries {
 		if abbreviation == "GEO" {
@@ -96,9 +97,17 @@ func readCountries() map[string]*Location {
 		for _, record := range country.Data {
 			date, err := parseDate(*record.JsonDate)
 			if err != nil {
-				log.Fatal("Could not parse country record date: " + *record.JsonDate)
+				panic(fmt.Sprintf("Could not parse country record date: " + *record.JsonDate))
 			}
 			record.Date = date
+		}
+
+		if len(country.Data) < len(countries["USA"].Data) - 80 {
+			remove[*country.FullName] = true
+		}
+
+		if int(*country.Population) < 10000 {
+			remove[*country.FullName] = true
 		}
 
 		country.Type = getStringPointer(LocationTypeCountry)
@@ -107,6 +116,10 @@ func readCountries() map[string]*Location {
 		country.populateSmoothedData()
 
 		locations[*country.FullName] = country
+	}
+
+	for name, _ := range remove {
+		delete(locations, name)
 	}
 
 	return locations
@@ -135,24 +148,24 @@ func readStates() map[string]*Location {
 func getDataFromURL(url string, data interface{}) {
 	response, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to get url: %s %v", url, err)
+		panic(fmt.Sprintf("Failed to get url: %s %v", url, err))
 		return
 	}
 
 	bytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	err = json.Unmarshal(bytes, &data)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
 func getDataFromString(s string, data interface{}) {
 	err := json.Unmarshal([]byte(s), &data)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
