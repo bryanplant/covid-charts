@@ -18,18 +18,22 @@ func Options(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	body := readRequest(r)
-
-	locationType := LocationTypeAll
-	if body.LocationType != nil {
-		locationType = *body.LocationType
-	}
-
-	log.Println("Get Options: " + locationType)
+	log.Println("Get Options")
 
 	ctx := context.Background()
 	client := getFirebaseClient(ctx)
-	options := getLocationOptions(ctx, client, locationType)
+
+	countryOptions := getOptions(ctx, client, LocationTypeCountry)
+	stateOptions := getOptions(ctx, client, LocationTypeState)
+	countryStats := getOptions(ctx, client, CountryStats)
+	stateStats := getOptions(ctx, client, StateStats)
+
+	options := map[string][]string {
+		LocationTypeCountry: countryOptions,
+		LocationTypeState: stateOptions,
+		CountryStats: countryStats,
+		StateStats: stateStats,
+	}
 
 	bytes, err := json.Marshal(options)
 	if err != nil {
@@ -45,15 +49,15 @@ func Options(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Options took %s", elapsed)
 }
 
-func getLocationOptions(ctx context.Context, client *firestore.Client, locationType string) []string {
+func getOptions(ctx context.Context, client *firestore.Client, optionName string) []string {
 	var optionsMap map[string][]string
-	doc, err := client.Collection("options").Doc(locationType).Get(ctx)
+	doc, err := client.Collection("options").Doc(optionName).Get(ctx)
 	if err != nil {
-		log.Fatalf("Could not get options: %s", locationType)
+		log.Fatalf("Could not get options: %s", optionName)
 	}
 	err = doc.DataTo(&optionsMap)
 	if err != nil {
-		log.Fatalf("Could not cast options to list: %s", locationType)
+		log.Fatalf("Could not cast options to list: %s", optionName)
 	}
 
 	options := optionsMap["list"]

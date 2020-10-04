@@ -39,7 +39,11 @@ func UpdateData(w http.ResponseWriter, _ *http.Request) {
 	for k, v := range countries {
 		allLocations[k] = v
 	}
+
 	updateLocationOptions(ctx, client, allLocations, LocationTypeAll)
+
+	updateOptions(ctx, client, CountryStats, countryStatOptions)
+	updateOptions(ctx, client, StateStats, stateStatOptions)
 
 	updateLocations(ctx, client, allLocations)
 
@@ -53,11 +57,15 @@ func updateLocationOptions(ctx context.Context, client *firestore.Client, locati
 		options = append(options, name)
 	}
 
-	_, err := client.Collection("options").Doc(locationType).Set(ctx, map[string]interface{}{
+	updateOptions(ctx, client, locationType, options)
+}
+
+func updateOptions(ctx context.Context, client *firestore.Client, optionName string, options []string) {
+	_, err := client.Collection("options").Doc(optionName).Set(ctx, map[string]interface{}{
 		"list": options,
 	})
 	if err != nil {
-		log.Fatalf("Failed adding option: %s, %v", locationType, err)
+		log.Fatalf("Failed adding option: %s, %v", optionName, err)
 	}
 }
 
@@ -146,4 +154,56 @@ func getDataFromString(s string, data interface{}) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+var countryStatOptions = []string {
+	TotalCases,
+	TotalCasesPerMillion,
+	NewCases,
+	NewCasesSmoothed,
+	NewCasesPerMillion,
+	NewCasesSmoothedPerMillion,
+
+	TotalDeaths,
+	TotalDeathsPerMillion,
+	NewDeaths,
+	NewDeathsSmoothed,
+	NewDeathsPerMillion,
+	NewDeathsSmoothedPerMillion,
+
+	TotalTests,
+	TotalTestsPerThousand,
+	NewTests,
+	NewTestsSmoothed,
+	NewTestsPerThousand,
+	NewTestsSmoothedPerThousand,
+
+	PositiveRate,
+	PositiveRateSmoothed,
+}
+
+var stateStatOptions = []string {
+	TotalCases,
+	TotalCasesPerMillion,
+	NewCases,
+	NewCasesSmoothed,
+	NewCasesPerMillion,
+	NewCasesSmoothedPerMillion,
+
+	TotalDeaths,
+	TotalDeathsPerMillion,
+	NewDeaths,
+	NewDeathsSmoothed,
+	NewDeathsPerMillion,
+	NewDeathsSmoothedPerMillion,
+
+	TotalTests,
+	TotalTestsPerThousand,
+	NewTests,
+	NewTestsSmoothed,
+	NewTestsPerThousand,
+	NewTestsSmoothedPerThousand,
+
+	PositiveRate,
+	PositiveRateSmoothed,
 }

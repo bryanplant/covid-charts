@@ -2,8 +2,11 @@ package src
 
 // Common consts
 const (
-	XStat      = "x_stat"
-	YStat      = "y_stat"
+	XStat        = "x_stat"
+	YStat        = "y_stat"
+	CountryStats = "country_stats"
+	StateStats   = "state_stats"
+
 	CountryURL = "https://covid.ourworldindata.org/data/owid-covid-data.json"
 	StateURL   = "https://api.covidtracking.com/v1/states/daily.json"
 	DateLayout = "2006-01-02"
@@ -14,34 +17,34 @@ const (
 	IsoCode   = "iso_code"
 	Continent = "continent"
 
-	TotalCases                 = "total_cases"
-	TotalCasesPerMillion       = "total_cases_per_million"
-	NewCases                   = "new_cases"
-	NewCasesSmoothed           = "new_cases_smoothed"
-	NewCasesPerMillion         = "new_cases_per_million"
-	NewCasesSmoothedPerMillion = "new_cases_smoothed_per_million"
+	TotalCases                 = "Total Cases"
+	TotalCasesPerMillion       = "Total Cases Per Million"
+	NewCases                   = "New Cases"
+	NewCasesSmoothed           = "New Cases Smoothed"
+	NewCasesPerMillion         = "New Cases Per Million"
+	NewCasesSmoothedPerMillion = "New Cases Smoothed Per Million"
 
-	TotalDeaths                 = "total_deaths"
-	TotalDeathsPerMillion       = "total_deaths_per_million"
-	NewDeaths                   = "new_deaths"
-	NewDeathsSmoothed           = "new_deaths_smoothed"
-	NewDeathsPerMillion         = "new_deaths_per_million"
-	NewDeathsSmoothedPerMillion = "new_deaths_smoothed_per_million"
+	TotalDeaths                 = "Total Deaths"
+	TotalDeathsPerMillion       = "Total Deaths Per Million"
+	NewDeaths                   = "New Deaths"
+	NewDeathsSmoothed           = "New Deaths Smoothed"
+	NewDeathsPerMillion         = "New Deaths Per Million"
+	NewDeathsSmoothedPerMillion = "New Deaths Smoothed Per Million"
 
-	TotalTests                  = "total_tests"
-	TotalTestsPerThousand       = "total_tests_per_thousand"
-	NewTests                    = "new_tests"
-	NewTestsSmoothed            = "new_tests_smoothed"
-	NewTestsPerThousand         = "new_tests_per_thousand"
-	NewTestsSmoothedPerThousand = "new_tests_smoothed_per_thousand"
+	TotalTests                  = "Total Tests"
+	TotalTestsPerThousand       = "Total Tests Per Thousand"
+	NewTests                    = "New Tests"
+	NewTestsSmoothed            = "New Tests Smoothed"
+	NewTestsPerThousand         = "New Tests Per Thousand"
+	NewTestsSmoothedPerThousand = "New Tests Smoothed Per Thousand"
 
-	PositiveRate         = "positive_rate"
-	PositiveRateSmoothed = "positive_rate_smoothed"
-	TestsPerCase         = "tests_per_case"
+	PositiveRate         = "Positive Rate"
+	PositiveRateSmoothed = "Positive Rate Smoothed"
+	TestsPerCase         = "Tests Per Case"
 
-	Population        = "population"
-	PopulationDensity = "population_density"
-	MedianAge         = "median_age"
+	Population        = "Population"
+	PopulationDensity = "Population Density"
+	MedianAge         = "Median Age"
 )
 
 // US data consts
