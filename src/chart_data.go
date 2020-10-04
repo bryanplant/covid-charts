@@ -35,7 +35,7 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 
 	body := readRequest(r)
 
-	log.Println("Get Chart Data: " + strings.Join(body.Locations, ","))
+	log.Println("Get Chart Data: " + strings.Join(body.Locations, ", "))
 
 	ctx := context.Background()
 	client := getFirebaseClient(ctx)
@@ -44,20 +44,6 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 	for _, location := range body.Locations {
 		selections[location] = true
 	}
-
-	//_, allStates := selections["All States"]
-	//_, allCountries := selections["All Countries"]
-	//delete(selections, "All States")
-	//delete(selections, "All Countries")
-	//for name, location := range locations {
-	//	if allStates && *location.Type == LocationTypeState {
-	//		selections[name] = true
-	//	}
-	//
-	//	if allCountries && *location.Type == LocationTypeCountry {
-	//		selections[name] = true
-	//	}
-	//}
 
 	var lines []Line
 	for selection := range selections {

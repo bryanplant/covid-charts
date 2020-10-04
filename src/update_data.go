@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sort"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -85,10 +86,20 @@ func readCountries() map[string]*Location {
 	var countries map[string]*Location
 	getDataFromURL(CountryURL, &countries)
 
-	remove := map[string]bool{}
-	locations := map[string]*Location{}
+	// Only save the top 100 countries with the most complete data
+	var countryList []*Location
 	for abbreviation, country := range countries {
-		if abbreviation == "GEO" {
+		country.Abbreviation = getStringPointer(abbreviation)
+		countryList = append(countryList, country)
+	}
+	sort.Slice(countryList, func(i int, j int) bool {
+		return len(countryList[i].Data) > len(countryList[j].Data)
+	})
+	countryList = countryList[:100]
+
+	locations := map[string]*Location{}
+	for _, country := range countryList {
+		if *country.FullName == "Georgia" {
 			// Remove Georgia -- conflicts with state
 			continue
 		}
@@ -102,24 +113,11 @@ func readCountries() map[string]*Location {
 			record.Date = date
 		}
 
-		if len(country.Data) < len(countries["USA"].Data) - 80 {
-			remove[*country.FullName] = true
-		}
-
-		if int(*country.Population) < 10000 {
-			remove[*country.FullName] = true
-		}
-
 		country.Type = getStringPointer(LocationTypeCountry)
-		country.Abbreviation = getStringPointer(abbreviation)
 		country.Color = getStringPointer("")
 		country.populateSmoothedData()
 
 		locations[*country.FullName] = country
-	}
-
-	for name, _ := range remove {
-		delete(locations, name)
 	}
 
 	return locations
@@ -169,7 +167,7 @@ func getDataFromString(s string, data interface{}) {
 	}
 }
 
-var countryStatOptions = []string {
+var countryStatOptions = []string{
 	TotalCases,
 	TotalCasesPerMillion,
 	NewCases,
@@ -195,7 +193,7 @@ var countryStatOptions = []string {
 	PositiveRateSmoothed,
 }
 
-var stateStatOptions = []string {
+var stateStatOptions = []string{
 	TotalCases,
 	TotalCasesPerMillion,
 	NewCases,
