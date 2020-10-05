@@ -15,7 +15,6 @@ import (
 
 type Line struct {
 	ID          string
-	DisplayName string
 	Color       string
 	Data        []DataPoint
 }
@@ -53,7 +52,7 @@ func ChartData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sort.Slice(lines, func(i, j int) bool {
-		return lines[i].DisplayName < lines[j].DisplayName
+		return lines[i].ID < lines[j].ID
 	})
 
 	bytes, err := json.Marshal(lines)
@@ -98,8 +97,7 @@ func getLine(location *Location, stat string) Line {
 	}
 
 	return Line{
-		ID:          *location.Abbreviation,
-		DisplayName: *location.FullName,
+		ID:          *location.FullName,
 		Color:       *location.Color,
 		Data:        dataPoints,
 	}
