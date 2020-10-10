@@ -20,3 +20,7 @@ func UpdateData(w http.ResponseWriter, r *http.Request) {
 func SaveChart(w http.ResponseWriter, r *http.Request) {
 	src.SaveChart(w, r)
 }
+
+func LoadChart(w http.ResponseWriter, r *http.Request) {
+	src.LoadChart(w, r)
+}

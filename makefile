@@ -1,14 +1,20 @@
 deploy:
-	make -j 3 deploy_chart deploy_options deploy_update
+	make -j 5 deploy_chart deploy_options deploy_update deploy_save deploy load
 
 deploy_chart:
-	gcloud functions deploy chart-data --entry-point="ChartData" --allow-unauthenticated
+	gcloud functions deploy chart-data --entry-point="ChartData" --allow-unauthenticated --trigger-http --runtime=go113
 
 deploy_options:
-	gcloud functions deploy options --entry-point="Options" --allow-unauthenticated
+	gcloud functions deploy options --entry-point="Options" --allow-unauthenticated --trigger-http --runtime=go113
 
 deploy_update:
-	gcloud functions deploy update-data --entry-point="UpdateData" --allow-unauthenticated
+	gcloud functions deploy update-data --entry-point="UpdateData" --allow-unauthenticated --trigger-http --runtime=go113
+
+deploy_save:
+	gcloud functions deploy save --entry-point="SaveChart" --allow-unauthenticated --trigger-http --runtime=go113
+
+deploy_load:
+	gcloud functions deploy load --entry-point="LoadChart" --allow-unauthenticated --trigger-http --runtime=go113
 
 serve:
 	set FIRESTORE_EMULATOR_HOST=localhost:8081

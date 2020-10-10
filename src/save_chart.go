@@ -2,7 +2,6 @@ package src
 
 import (
 	"context"
-	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"net/http"
@@ -10,27 +9,11 @@ import (
 )
 
 type ChartSettings struct {
-	Data          []*Line    `json:"data" firestore:"data"`
-	StartDate     *time.Time `json:"-" firestore:"start_date"`
-	StartDateJson *string    `json:"start_date" firestore:"_"`
-	EndDate       *time.Time `json:"-" firestore:"end_date"`
-	EndDateJson   *string    `json:"end_date" firestore:"_"`
-	XStat         *string    `json:"x_stat" firestore:"x_stat"`
-	YStat         *string    `json:"y_stat" firestore:"y_stat"`
-}
-
-func (cs *ChartSettings) populateDates() {
-	date, err := parseDate(*cs.StartDateJson)
-	if err != nil {
-		panic(fmt.Sprintf("Could not parse start date: " + *cs.StartDateJson))
-	}
-	cs.StartDate = date
-
-	date, err = parseDate(*cs.EndDateJson)
-	if err != nil {
-		panic(fmt.Sprintf("Could not parse end date: " + *cs.EndDateJson))
-	}
-	cs.EndDate = date
+	Data      []*Line `json:"data" firestore:"data"`
+	StartDate *string `json:"start_date" firestore:"start_date"`
+	EndDate   *string `json:"end_date" firestore:"end_date"`
+	XStat     *string `json:"x_stat" firestore:"x_stat"`
+	YStat     *string `json:"y_stat" firestore:"y_stat"`
 }
 
 func SaveChart(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +28,6 @@ func SaveChart(w http.ResponseWriter, r *http.Request) {
 	if body.Settings == nil {
 		panic("Failed to parse settings")
 	}
-	body.Settings.populateDates()
 
 	log.Println("Save Chart")
 
@@ -62,16 +44,6 @@ func SaveChart(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		panic("Failed saving chart to database: " + err.Error())
-	}
-
-	doc, err := client.Collection("charts").Doc(id).Get(ctx)
-	if err != nil {
-		panic("a")
-	}
-	var load ChartSettings
-	err = doc.DataTo(&load)
-	if err != nil {
-		panic("b")
 	}
 
 	_, err = w.Write([]byte("unchartd.io/?chart=" + id))

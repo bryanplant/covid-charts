@@ -47,4 +47,5 @@ type Request struct {
 	XStat        *string        `json:"x_stat"`
 	YStat        *string        `json:"y_stat"`
 	Settings     *ChartSettings `json:"settings"`
+	ChartID      *string        `json:"id"`
 }

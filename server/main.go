@@ -22,6 +22,9 @@ func main() {
 	if err := funcframework.RegisterHTTPFunctionContext(ctx, "/save", functions.SaveChart); err != nil {
 		panic(err)
 	}
+	if err := funcframework.RegisterHTTPFunctionContext(ctx, "/load", functions.LoadChart); err != nil {
+		panic(err)
+	}
 	if err := funcframework.Start("8080"); err != nil {
 		panic(err)
 	}
