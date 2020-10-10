@@ -42,8 +42,9 @@ func readRequest(r *http.Request) *Request {
 }
 
 type Request struct {
-	Locations    []string `json:"locations"`
-	LocationType *string  `json:"location_type,omitempty"`
-	XStat        *string  `json:"x_stat"`
-	YStat        *string  `json:"y_stat"`
+	Locations    []string       `json:"locations"`
+	LocationType *string        `json:"location_type,omitempty"`
+	XStat        *string        `json:"x_stat"`
+	YStat        *string        `json:"y_stat"`
+	Settings     *ChartSettings `json:"settings"`
 }

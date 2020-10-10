@@ -14,9 +14,9 @@ import (
 )
 
 type Line struct {
-	ID          string
-	Color       string
-	Data        []DataPoint
+	ID    string      `json:"id"`
+	Color string      `json:"color"`
+	Data  []DataPoint `json:"data"`
 }
 
 type DataPoint struct {
@@ -97,8 +97,8 @@ func getLine(location *Location, stat string) Line {
 	}
 
 	return Line{
-		ID:          *location.FullName,
-		Color:       *location.Color,
-		Data:        dataPoints,
+		ID:    *location.FullName,
+		Color: *location.Color,
+		Data:  dataPoints,
 	}
 }

@@ -49,7 +49,7 @@ func UpdateData(w http.ResponseWriter, _ *http.Request) {
 	updateLocations(ctx, client, allLocations)
 
 	elapsed := time.Since(start)
-	log.Printf("UpdateData took %s", elapsed)
+	log.Printf("Update Data took %s", elapsed)
 }
 
 func updateLocationOptions(ctx context.Context, client *firestore.Client, locations map[string]*Location, locationType string) {

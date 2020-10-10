@@ -16,3 +16,7 @@ func Options(w http.ResponseWriter, r *http.Request) {
 func UpdateData(w http.ResponseWriter, r *http.Request) {
 	src.UpdateData(w, r)
 }
+
+func SaveChart(w http.ResponseWriter, r *http.Request) {
+	src.SaveChart(w, r)
+}

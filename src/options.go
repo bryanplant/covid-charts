@@ -29,11 +29,11 @@ func Options(w http.ResponseWriter, r *http.Request) {
 	countryStats := getOptions(ctx, client, CountryStats)
 	stateStats := getOptions(ctx, client, StateStats)
 
-	options := map[string][]string {
+	options := map[string][]string{
 		LocationTypeCountry: countryOptions,
-		LocationTypeState: stateOptions,
-		CountryStats: countryStats,
-		StateStats: stateStats,
+		LocationTypeState:   stateOptions,
+		CountryStats:        countryStats,
+		StateStats:          stateStats,
 	}
 
 	bytes, err := json.Marshal(options)

@@ -116,7 +116,7 @@ type Record struct {
 	PositiveRate                *float64 `json:"positive_rate"`
 	PositiveRateSmoothed        *float64 `json:"positive_rate_smoothed"`
 
-	HospitalizedCurrently       *float64
+	HospitalizedCurrently *float64
 }
 
 func (r Record) getField(field string) *float64 {
