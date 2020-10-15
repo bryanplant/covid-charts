@@ -2,10 +2,12 @@ package src
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"time"
+
+	"cloud.google.com/go/firestore"
+	"github.com/speps/go-hashids"
 )
 
 type ChartSettings struct {
@@ -34,8 +36,26 @@ func SaveChart(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	client := getFirebaseClient(ctx)
 
-	id := uuid.New().String()
-	_, err := client.Collection("charts").Doc(id).Set(ctx, map[string]interface{}{
+	counterRef := client.Collection("charts").Doc("counter")
+	_, err := counterRef.Update(ctx, []firestore.Update{{Path: "count", Value: firestore.Increment(1)}})
+	if err != nil {
+		panic("Failed to increment save counter: " + err.Error())
+	}
+
+	counter, err := counterRef.Get(ctx)
+	if err != nil {
+		panic("Failed to get save counter: " + err.Error())
+	}
+
+	count := int(counter.Data()["count"].(int64))
+
+	hd := hashids.NewData()
+	hd.Salt = "this is my salt"
+	hd.MinLength = 5
+	h, _ := hashids.NewWithData(hd)
+	id, _ := h.Encode([]int{count})
+
+	_, err = client.Collection("charts").Doc(id).Set(ctx, map[string]interface{}{
 		"data":       body.Settings.Data,
 		"start_date": body.Settings.StartDate,
 		"end_date":   body.Settings.EndDate,

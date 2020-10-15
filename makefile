@@ -1,5 +1,5 @@
 deploy:
-	make -j 5 deploy_chart deploy_options deploy_update deploy_save deploy load
+	make -j 5 deploy_chart deploy_options deploy_update deploy_save deploy_load
 
 deploy_chart:
 	gcloud functions deploy chart-data --entry-point="ChartData" --allow-unauthenticated --trigger-http --runtime=go113
