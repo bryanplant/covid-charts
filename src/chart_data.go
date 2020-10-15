@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"sort"
 	"strings"
@@ -20,8 +21,8 @@ type Line struct {
 }
 
 type DataPoint struct {
-	Date  string
-	Value float64
+	Date  string  `json:"x"`
+	Value float64 `json:"y"`
 }
 
 func ChartData(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +91,7 @@ func getLine(location *Location, stat string) Line {
 		if value := item.getField(stat); value != nil && *value >= 0 {
 			dataPoint := DataPoint{
 				Date:  item.Date.Format(DateLayout),
-				Value: *value,
+				Value: math.Round(*value*10000) / 10000,
 			}
 			dataPoints = append(dataPoints, dataPoint)
 		}
