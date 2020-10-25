@@ -115,9 +115,6 @@ type Record struct {
 	TestsPerCase                *float64 `json:"tests_per_case"`
 	PositiveRate                *float64 `json:"positive_rate"`
 	PositiveRateSmoothed        *float64 `json:"positive_rate_smoothed"`
-
-	HospitalizedCurrently *float64
-	InIcuCurrently        *float64
 }
 
 func (r Record) getField(field string) *float64 {
@@ -170,11 +167,6 @@ func (r Record) getField(field string) *float64 {
 		return r.PositiveRate
 	case PositiveRateSmoothed:
 		return r.PositiveRateSmoothed
-
-	case HospitalizedCurrently:
-		return r.HospitalizedCurrently
-	case InIcuCurrently:
-		return r.InIcuCurrently
 	}
 
 	panic("Unknown Record field: " + field)
@@ -290,9 +282,6 @@ func StateRecordsToLocations(stateRecords []*StateRecord, stateMetadata map[stri
 			NewTests:              stateRecord.NewTests,
 			NewTestsPerThousand:   &newTestsPerThousand,
 			PositiveRate:          &positiveRate,
-
-			HospitalizedCurrently: stateRecord.HospitalizedCurrently,
-			InIcuCurrently:        stateRecord.InIcuCurrently,
 		}
 		location.Data = append(location.Data, record)
 	}
