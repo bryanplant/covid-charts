@@ -36,19 +36,29 @@ func SaveChart(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	client := getFirebaseClient(ctx)
 
+	// Create counter if necessary
 	counterRef := client.Collection("charts").Doc("counter")
-	_, err := counterRef.Update(ctx, []firestore.Update{{Path: "count", Value: firestore.Increment(1)}})
+	_, err := counterRef.Create(ctx, map[string]interface{}{
+		"count": 0,
+	})
+	if err != nil {
+		// document already exists, just ignore the error
+	}
+
+	// Increment counter
+	_, err = counterRef.Update(ctx, []firestore.Update{{Path: "count", Value: firestore.Increment(1)}})
 	if err != nil {
 		panic("Failed to increment save counter: " + err.Error())
 	}
 
+	// Read counter
 	counter, err := counterRef.Get(ctx)
 	if err != nil {
 		panic("Failed to get save counter: " + err.Error())
 	}
-
 	count := int(counter.Data()["count"].(int64))
 
+	// Generate hash id
 	hd := hashids.NewData()
 	hd.Salt = "this is my salt"
 	hd.MinLength = 5
