@@ -25,7 +25,7 @@ const StateMetadataJSON = `{
   "AZ": {
     "name": "Arizona",
     "type": "state",
-    "color": "` + ColorRed + `",
+    "color": "` + ColorBlue + `",
     "population": 7278717
   },
   "AR": {
@@ -73,7 +73,7 @@ const StateMetadataJSON = `{
   "GA": {
     "name": "Georgia",
     "type": "state",
-    "color": "` + ColorRed + `",
+    "color": "` + ColorBlue + `",
     "population": 10617423
   },
   "GU": {
@@ -151,7 +151,7 @@ const StateMetadataJSON = `{
   "MI": {
     "name": "Michigan",
     "type": "state",
-    "color": "` + ColorRed + `",
+    "color": "` + ColorBlue + `",
     "population": 9986857
   },
   "MN": {
@@ -253,7 +253,7 @@ const StateMetadataJSON = `{
   "PA": {
     "name": "Pennsylvania",
     "type": "state",
-    "color": "` + ColorRed + `",
+    "color": "` + ColorBlue + `",
     "population": 12801989
   },
   "PR": {
@@ -331,7 +331,7 @@ const StateMetadataJSON = `{
   "WI": {
     "name": "Wisconsin",
     "type": "state",
-    "color":  "` + ColorRed + `",
+    "color":  "` + ColorBlue + `",
     "population": 5822434
   },
   "WY": {
