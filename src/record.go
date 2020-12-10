@@ -224,7 +224,7 @@ func StateRecordsToLocations(stateRecords []*StateRecord, stateMetadata map[stri
 				Continent:    getStringPointer("North America"),
 				FullName:     metadata.FullName,
 				Abbreviation: stateRecord.Abbreviation,
-				Color:        metadata.Color,
+				Color:        getStringPointer(""),
 				Population:   metadata.Population,
 				Data:         []*Record{},
 			}
