@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"sort"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -86,16 +85,11 @@ func readCountries() map[string]*Location {
 	var countries map[string]*Location
 	getDataFromURL(CountryURL, &countries)
 
-	// Only save the top 100 countries with the most complete data
 	var countryList []*Location
 	for abbreviation, country := range countries {
 		country.Abbreviation = getStringPointer(abbreviation)
 		countryList = append(countryList, country)
 	}
-	sort.Slice(countryList, func(i int, j int) bool {
-		return len(countryList[i].Data) > len(countryList[j].Data)
-	})
-	countryList = countryList[:100]
 
 	locations := map[string]*Location{}
 	for _, country := range countryList {
